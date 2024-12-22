@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>國際合作夥伴</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Arial", sans-serif;
+        background-color: #f5f5f5;
+        padding: 20px;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+      }
+
+      h1 {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 32px;
+      }
+
+      .partners-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 24px;
+      }
+
+      .partner-card {
+        background: white;
+        border-radius: 8px;
+        padding: 24px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        transition: box-shadow 0.3s ease;
+      }
+
+      .partner-card:hover {
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .partner-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .flag {
+        font-size: 24px;
+      }
+
+      .country-name {
+        font-size: 20px;
+        font-weight: bold;
+      }
+
+      .institution {
+        color: #2563eb;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .details {
+        color: #666;
+        margin-bottom: 16px;
+      }
+
+      .phase-section {
+        border-top: 1px solid #eee;
+        padding-top: 16px;
+        margin-top: 16px;
+      }
+
+      .phase-label {
+        font-size: 14px;
+        color: #666;
+        margin-bottom: 4px;
+      }
+
+      .phase-value {
+        font-weight: 500;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>國際合作夥伴</h1>
+
+      <div class="partners-grid">
+        <div class="partner-card">
+          <div class="partner-header">
+            <span class="flag">🇹🇭</span>
+            <h2 class="country-name">泰國</h2>
+          </div>
+          <p class="institution">泰國農業大學</p>
+          <p class="details">RCHAA</p>
+          <div class="phase-section">
+            <p class="phase-label">執行階段</p>
+            <p class="phase-value">確認落地場域國家與技術項目</p>
+          </div>
+        </div>
+
+        <div class="partner-card">
+          <div class="partner-header">
+            <span class="flag">🇻🇳</span>
+            <h2 class="country-name">越南</h2>
+          </div>
+          <p class="institution">胡志明市立理科大學</p>
+          <p class="details">高科技農業應用中心</p>
+          <div class="phase-section">
+            <p class="phase-label">執行階段</p>
+            <p class="phase-value">確認落地場域國家與技術項目</p>
+          </div>
+        </div>
+
+        <div class="partner-card">
+          <div class="partner-header">
+            <span class="flag">🇮🇩</span>
+            <h2 class="country-name">印尼</h2>
+          </div>
+          <p class="institution">Paneltech.US</p>
+          <p class="details">試驗儀器與環境部屬</p>
+          <div class="phase-section">
+            <p class="phase-label">執行階段</p>
+            <p class="phase-value">試驗儀器與環境部屬</p>
+          </div>
+        </div>
+
+        <div class="partner-card">
+          <div class="partner-header">
+            <span class="flag">🇮🇳</span>
+            <h2 class="country-name">印度</h2>
+          </div>
+          <p class="institution">中央農業大學 (CAU)</p>
+          <p class="details">數據收集與分析</p>
+          <div class="phase-section">
+            <p class="phase-label">執行階段</p>
+            <p class="phase-value">數據收集與分析</p>
+          </div>
+        </div>
+
+        <div class="partner-card">
+          <div class="partner-header">
+            <span class="flag">🇩🇪</span>
+            <h2 class="country-name">德國</h2>
+          </div>
+          <p class="institution">德國人工智慧研究中心 (DFKI)</p>
+          <div class="phase-section">
+            <p class="phase-label">執行階段</p>
+            <p class="phase-value">數據收集與分析</p>
+          </div>
+        </div>
+
+        <div class="partner-card">
+          <div class="partner-header">
+            <span class="flag">🇺🇸</span>
+            <h2 class="country-name">美國</h2>
+          </div>
+          <p class="institution">NSF-ICICLE, NSF-COALESCE</p>
+          <div class="phase-section">
+            <p class="phase-label">執行階段</p>
+            <p class="phase-value">模型優化與微調</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

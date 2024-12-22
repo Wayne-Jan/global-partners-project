@@ -107,17 +107,38 @@
             const data = await response.json();
 
             if (response.ok) {
+              // 儲存用戶資訊和 token
               localStorage.setItem("token", data.token);
               localStorage.setItem("user", JSON.stringify(data.user));
-              // 修改：登入成功後返回 partners.html
-              window.location.href = "/partners.html";
+
+              console.log("Login successful:", data); // 用於除錯
+
+              // 根據用戶角色決定跳轉頁面
+              if (data.user.role === "admin") {
+                // 管理員跳轉到 dashboard
+                window.location.href = "/dashboard.html";
+              } else {
+                // 一般用戶跳轉到 partners 頁面
+                window.location.href = "/partners.html";
+              }
             } else {
               errorMessage.textContent = data.message || "登入失敗";
               errorMessage.classList.remove("hidden");
+              errorMessage.classList.add(
+                "text-red-600",
+                "bg-red-50",
+                "border-red-200"
+              );
             }
           } catch (error) {
+            console.error("Login error:", error); // 用於除錯
             errorMessage.textContent = "系統發生錯誤，請稍後再試";
             errorMessage.classList.remove("hidden");
+            errorMessage.classList.add(
+              "text-red-600",
+              "bg-red-50",
+              "border-red-200"
+            );
           }
         });
 
@@ -127,8 +148,8 @@
         if (urlParams.get("registered") === "true") {
           const errorMessage = document.getElementById("errorMessage");
           errorMessage.textContent = "註冊成功！請登入";
-          errorMessage.classList.remove("hidden");
           errorMessage.classList.remove(
+            "hidden",
             "text-red-600",
             "bg-red-50",
             "border-red-200"
@@ -138,6 +159,20 @@
             "bg-green-50",
             "border-green-200"
           );
+        }
+      });
+
+      // 檢查是否已經登入，如果已登入則重定向
+      window.addEventListener("load", () => {
+        const token = localStorage.getItem("token");
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+        if (token && user) {
+          if (user.role === "admin") {
+            window.location.href = "/dashboard.html";
+          } else {
+            window.location.href = "/partners.html";
+          }
         }
       });
     </script>

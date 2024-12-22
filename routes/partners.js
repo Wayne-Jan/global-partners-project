@@ -29,14 +29,25 @@ router.get("/:id", async (req, res) => {
 // 新增合作夥伴 (需要管理員權限)
 router.post("/", auth, isAdmin, async (req, res) => {
   try {
+    if (!req.user || !req.user.userId) {
+      return res.status(400).json({ message: "使用者驗證失敗" });
+    }
+
     const partner = new Partner({
       ...req.body,
-      createdBy: req.user._id,
-      updatedBy: req.user._id,
+      createdBy: req.user.userId,
+      updatedBy: req.user.userId,
     });
+
     const newPartner = await partner.save();
     res.status(201).json(newPartner);
   } catch (error) {
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        message: "資料驗證失敗",
+        details: Object.values(error.errors).map((err) => err.message),
+      });
+    }
     res.status(400).json({ message: error.message });
   }
 });

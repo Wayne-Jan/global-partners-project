@@ -346,8 +346,8 @@
         const data = {
           country: {
             code: formData.get("country"),
-            name: countries[formData.get("country")].name,
-            flag: countries[formData.get("country")].flag,
+            name: countries[formData.get("country")]?.name,
+            flag: countries[formData.get("country")]?.flag,
           },
           institution: {
             name: formData.get("institution"),
@@ -365,16 +365,45 @@
           contacts: [],
         };
 
+        // 基本資料驗證
+        if (!data.country.code || !data.country.name || !data.country.flag) {
+          alert("請選擇國家");
+          return;
+        }
+
+        if (!data.institution.name) {
+          alert("請輸入機構名稱");
+          return;
+        }
+
+        if (!data.project.name) {
+          alert("請輸入計畫名稱");
+          return;
+        }
+
+        if (!data.progress.phase) {
+          alert("請選擇執行階段");
+          return;
+        }
+
         // 收集場地資訊
         for (let i = 0; i < siteCount; i++) {
           const siteName = formData.get(`sites[${i}][name]`);
           if (siteName) {
-            data.sites.push({
+            const site = {
               name: siteName,
               type: formData.get(`sites[${i}][type]`),
               location: formData.get(`sites[${i}][location]`),
               status: formData.get(`sites[${i}][status]`),
-            });
+            };
+
+            // 場地資料驗證
+            if (!site.type || !site.location || !site.status) {
+              alert(`請完整填寫場地 "${siteName}" 的所有必填資訊`);
+              return;
+            }
+
+            data.sites.push(site);
           }
         }
 
@@ -382,44 +411,80 @@
         for (let i = 0; i < contactCount; i++) {
           const contactName = formData.get(`contacts[${i}][name]`);
           if (contactName) {
-            data.contacts.push({
+            const contact = {
               name: contactName,
               title: formData.get(`contacts[${i}][title]`),
               email: formData.get(`contacts[${i}][email]`),
               phone: formData.get(`contacts[${i}][phone]`),
-            });
+            };
+
+            // 聯絡人資料驗證
+            if (!contact.title || !contact.email) {
+              alert(`請完整填寫聯絡人 "${contactName}" 的所有必填資訊`);
+              return;
+            }
+
+            // Email 格式驗證
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(contact.email)) {
+              alert(`聯絡人 "${contactName}" 的 Email 格式不正確`);
+              return;
+            }
+
+            data.contacts.push(contact);
           }
         }
 
         try {
+          const token = localStorage.getItem("token");
+          if (!token) {
+            throw new Error("未登入狀態");
+          }
+
           const response = await fetch("/api/partners", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
+              Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify(data),
           });
 
-          if (response.ok) {
-            window.location.href = "/partners.html";
-          } else {
-            const error = await response.json();
-            throw new Error(error.message);
+          // 除錯日誌
+          const responseData = await response.json();
+
+          if (!response.ok) {
+            throw new Error(responseData.message || "儲存失敗");
           }
+
+          // 儲存成功
+          alert("儲存成功！");
+          window.location.href = "/partners.html";
         } catch (error) {
+          console.error("Error details:", error);
           alert(`儲存失敗: ${error.message}`);
         }
       }
 
-      // 刪除場地/聯絡人
-      document.addEventListener("click", (event) => {
-        if (event.target.classList.contains("remove-site")) {
-          event.target.closest(".site-form").remove();
-        } else if (event.target.classList.contains("remove-contact")) {
-          event.target.closest(".contact-form").remove();
-        }
-      });
+      // 事件監聽器設置
+      function setupEventListeners() {
+        // 刪除場地/聯絡人的事件監聽
+        document.addEventListener("click", (event) => {
+          if (event.target.classList.contains("remove-site")) {
+            event.target.closest(".site-form").remove();
+          } else if (event.target.classList.contains("remove-contact")) {
+            event.target.closest(".contact-form").remove();
+          }
+        });
+
+        // 表單提交的事件監聽
+        document
+          .getElementById("partnerForm")
+          .addEventListener("submit", handleSubmit);
+      }
+
+      // 頁面載入時初始化
+      document.addEventListener("DOMContentLoaded", setupEventListeners);
 
       // 載入現有資料（如果是編輯模式）
       async function loadExistingData() {

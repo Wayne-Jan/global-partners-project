@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>國際合作夥伴系統 - 儀表板</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-gray-50">
+    <!-- 導航欄 -->
+    <nav class="bg-white shadow-sm">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-16">
+          <div class="flex items-center">
+            <a href="/dashboard.html" class="flex-shrink-0 flex items-center">
+              <span class="text-xl font-semibold text-gray-900"
+                >國際合作夥伴系統</span
+              >
+            </a>
+            <div class="hidden sm:ml-6 sm:flex sm:space-x-8">
+              <a
+                href="/partners.html"
+                class="text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 border-transparent hover:border-gray-300"
+              >
+                合作夥伴列表
+              </a>
+            </div>
+          </div>
+          <div class="flex items-center">
+            <span id="userName" class="text-sm text-gray-700 mr-4"></span>
+            <span
+              id="userRole"
+              class="text-sm bg-blue-100 text-blue-800 px-2 py-1 rounded-full mr-4"
+            ></span>
+            <button
+              onclick="logout()"
+              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700"
+            >
+              登出
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- 主要內容 -->
+    <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+      <!-- 歡迎訊息 -->
+      <div class="px-4 py-6 sm:px-0">
+        <div class="bg-white overflow-hidden shadow rounded-lg">
+          <div class="px-4 py-5 sm:p-6">
+            <h1 class="text-2xl font-bold text-gray-900 mb-4">歡迎回來</h1>
+            <p class="text-gray-600">這裡是您的儀表板。您可以：</p>
+            <ul class="mt-4 list-disc list-inside text-gray-600">
+              <li>查看和管理國際合作夥伴資訊</li>
+              <li>更新合作進度和階段</li>
+              <li>管理系統設定</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <script>
+      // 檢查登入狀態
+      function checkAuth() {
+        const token = localStorage.getItem("token");
+        if (!token) {
+          window.location.href = "/index.html";
+          return;
+        }
+
+        // 顯示使用者資訊
+        const user = JSON.parse(localStorage.getItem("user"));
+        if (user) {
+          document.getElementById("userName").textContent = user.username;
+          document.getElementById("userRole").textContent =
+            user.role === "admin" ? "管理員" : "一般使用者";
+        }
+      }
+
+      // 登出功能
+      function logout() {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "/index.html";
+      }
+
+      // 在頁面載入時檢查登入狀態
+      window.addEventListener("load", checkAuth);
+    </script>
+  </body>
+</html>

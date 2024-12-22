@@ -63,12 +63,6 @@
         padding: 20px;
       }
 
-      h1 {
-        font-size: 24px;
-        font-weight: bold;
-        margin-bottom: 32px;
-      }
-
       .partners-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
@@ -80,11 +74,13 @@
         border-radius: 8px;
         padding: 24px;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        transition: box-shadow 0.3s ease;
+        transition: transform 0.3s ease;
+        cursor: pointer;
       }
 
       .partner-card:hover {
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transform: translateY(-4px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
       }
 
       .partner-header {
@@ -143,7 +139,7 @@
             class="nav-item"
             id="dashboardLink"
             style="display: none"
-            >儀表板</a
+            >管理系統</a
           >
           <button id="logoutBtn" class="nav-item" style="display: none">
             登出
@@ -153,88 +149,52 @@
     </nav>
 
     <div class="container">
-      <h1>國際合作夥伴</h1>
-
-      <div class="partners-grid">
-        <div class="partner-card">
-          <div class="partner-header">
-            <span class="flag">🇹🇭</span>
-            <h2 class="country-name">泰國</h2>
-          </div>
-          <p class="institution">泰國農業大學</p>
-          <p class="details">RCHAA</p>
-          <div class="phase-section">
-            <p class="phase-label">執行階段</p>
-            <p class="phase-value">確認落地場域國家與技術項目</p>
-          </div>
-        </div>
-
-        <div class="partner-card">
-          <div class="partner-header">
-            <span class="flag">🇻🇳</span>
-            <h2 class="country-name">越南</h2>
-          </div>
-          <p class="institution">胡志明市立理科大學</p>
-          <p class="details">高科技農業應用中心</p>
-          <div class="phase-section">
-            <p class="phase-label">執行階段</p>
-            <p class="phase-value">確認落地場域國家與技術項目</p>
-          </div>
-        </div>
-
-        <div class="partner-card">
-          <div class="partner-header">
-            <span class="flag">🇮🇩</span>
-            <h2 class="country-name">印尼</h2>
-          </div>
-          <p class="institution">Paneltech.US</p>
-          <p class="details">試驗儀器與環境部屬</p>
-          <div class="phase-section">
-            <p class="phase-label">執行階段</p>
-            <p class="phase-value">試驗儀器與環境部屬</p>
-          </div>
-        </div>
-
-        <div class="partner-card">
-          <div class="partner-header">
-            <span class="flag">🇮🇳</span>
-            <h2 class="country-name">印度</h2>
-          </div>
-          <p class="institution">中央農業大學 (CAU)</p>
-          <p class="details">數據收集與分析</p>
-          <div class="phase-section">
-            <p class="phase-label">執行階段</p>
-            <p class="phase-value">數據收集與分析</p>
-          </div>
-        </div>
-
-        <div class="partner-card">
-          <div class="partner-header">
-            <span class="flag">🇩🇪</span>
-            <h2 class="country-name">德國</h2>
-          </div>
-          <p class="institution">德國人工智慧研究中心 (DFKI)</p>
-          <div class="phase-section">
-            <p class="phase-label">執行階段</p>
-            <p class="phase-value">數據收集與分析</p>
-          </div>
-        </div>
-
-        <div class="partner-card">
-          <div class="partner-header">
-            <span class="flag">🇺🇸</span>
-            <h2 class="country-name">美國</h2>
-          </div>
-          <p class="institution">NSF-ICICLE, NSF-COALESCE</p>
-          <div class="phase-section">
-            <p class="phase-label">執行階段</p>
-            <p class="phase-value">模型優化與微調</p>
-          </div>
-        </div>
+      <div class="partners-grid" id="partnersGrid">
+        <!-- 合作夥伴卡片會動態載入到這裡 -->
       </div>
     </div>
 
     <script>
+      // 載入合作夥伴資料
+      async function loadPartners() {
+        try {
+          const response = await fetch("/api/partners");
+          const partners = await response.json();
+          displayPartners(partners);
+        } catch (error) {
+          console.error("Error loading partners:", error);
+        }
+      }
+
+      // 顯示合作夥伴卡片
+      function displayPartners(partners) {
+        const grid = document.getElementById("partnersGrid");
+        grid.innerHTML = partners
+          .map(
+            (partner) => `
+                <div class="partner-card" onclick="location.href='/partner-detail.html?id=${
+                  partner._id
+                }'">
+                    <div class="partner-header">
+                        <span class="flag">${partner.country.flag}</span>
+                        <h2 class="country-name">${partner.country.name}</h2>
+                    </div>
+                    <p class="institution">${partner.institution.name}</p>
+                    ${
+                      partner.institution.department
+                        ? `<p class="details">${partner.institution.department}</p>`
+                        : ""
+                    }
+                    <div class="phase-section">
+                        <p class="phase-label">執行階段</p>
+                        <p class="phase-value">${partner.progress.phase}</p>
+                    </div>
+                </div>
+            `
+          )
+          .join("");
+      }
+
       // 檢查登入狀態
       function checkAuthStatus() {
         const token = localStorage.getItem("token");
@@ -247,7 +207,9 @@
         if (token) {
           registerLink.style.display = "none";
           loginLink.style.display = "none";
-          dashboardLink.style.display = "inline-block";
+          if (user.role === "admin") {
+            dashboardLink.style.display = "inline-block";
+          }
           logoutBtn.style.display = "inline-block";
         } else {
           registerLink.style.display = "inline-block";
@@ -258,15 +220,18 @@
       }
 
       // 登出功能
-      document.getElementById("logoutBtn").addEventListener("click", () => {
+      document.getElementById("logoutBtn")?.addEventListener("click", () => {
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         checkAuthStatus();
-        window.location.href = "/";
+        window.location.reload();
       });
 
-      // 頁面載入時檢查登入狀態
-      window.addEventListener("load", checkAuthStatus);
+      // 初始化
+      document.addEventListener("DOMContentLoaded", () => {
+        loadPartners();
+        checkAuthStatus();
+      });
     </script>
   </body>
 </html>

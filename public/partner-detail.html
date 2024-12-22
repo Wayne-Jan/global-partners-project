@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>合作夥伴詳細資訊</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .timeline-container {
+        position: relative;
+        padding-left: 32px;
+      }
+      .timeline-line {
+        position: absolute;
+        left: 15px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background-color: #e5e7eb;
+      }
+      .timeline-dot {
+        position: absolute;
+        left: 11px;
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background-color: #3b82f6;
+      }
+      .timeline-item {
+        position: relative;
+        margin-bottom: 24px;
+        padding-bottom: 24px;
+        border-bottom: 1px solid #e5e7eb;
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <!-- 導覽列 -->
+    <nav class="bg-white shadow">
+      <div class="max-w-7xl mx-auto px-4">
+        <div class="flex justify-between h-16">
+          <div class="flex">
+            <a href="/" class="flex items-center text-blue-600 font-bold">
+              國際合作夥伴
+            </a>
+          </div>
+          <div class="flex items-center space-x-4" id="navButtons">
+            <!-- 權限按鈕將由 JavaScript 動態添加 -->
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <!-- 主要內容區 -->
+    <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+      <!-- 基本資訊卡片 -->
+      <div class="bg-white rounded-lg shadow mb-6">
+        <div class="p-6">
+          <div id="basicInfo" class="mb-6">
+            <!-- 基本資訊將由 JavaScript 動態填充 -->
+          </div>
+          <div id="progressInfo" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- 進度資訊將由 JavaScript 動態填充 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 詳細資訊區塊 -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- 時間軸 -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <h2 class="text-xl font-semibold mb-4">進度時間軸</h2>
+          <div id="timelineContainer" class="timeline-container">
+            <div class="timeline-line"></div>
+            <!-- 時間軸項目將由 JavaScript 動態填充 -->
+          </div>
+        </div>
+
+        <!-- 場地資訊 -->
+        <div class="bg-white rounded-lg shadow p-6">
+          <h2 class="text-xl font-semibold mb-4">場地資訊</h2>
+          <div id="sitesContainer" class="space-y-4">
+            <!-- 場地資訊將由 JavaScript 動態填充 -->
+          </div>
+        </div>
+      </div>
+
+      <!-- 聯絡人資訊 -->
+      <div class="bg-white rounded-lg shadow mt-6 p-6">
+        <h2 class="text-xl font-semibold mb-4">聯絡窗口</h2>
+        <div
+          id="contactsContainer"
+          class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
+        >
+          <!-- 聯絡人資訊將由 JavaScript 動態填充 -->
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // 檢查用戶權限
+      function checkPermissions() {
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        const navButtons = document.getElementById("navButtons");
+
+        if (
+          user.role === "admin" ||
+          (user.assignedCountries || []).includes(
+            window.partnerData?.country.code
+          )
+        ) {
+          navButtons.innerHTML = `
+                    <button onclick="location.href='/partner-management.html?id=${window.partnerData?._id}'"
+                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                        編輯資料
+                    </button>
+                `;
+        }
+      }
+
+      // 載入合作夥伴資料
+      async function loadPartnerData() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const partnerId = urlParams.get("id");
+
+        if (!partnerId) {
+          window.location.href = "/partners.html";
+          return;
+        }
+
+        try {
+          const response = await fetch(`/api/partners/${partnerId}`);
+          const data = await response.json();
+          window.partnerData = data;
+          updateUI(data);
+          checkPermissions();
+        } catch (error) {
+          console.error("Error loading partner data:", error);
+        }
+      }
+
+      // 更新 UI
+      function updateUI(data) {
+        // 更新基本資訊
+        document.getElementById("basicInfo").innerHTML = `
+                <div class="flex items-center space-x-4">
+                    <span class="text-4xl">${data.country.flag}</span>
+                    <h1 class="text-2xl font-bold">${data.country.name}</h1>
+                </div>
+                <div class="mt-4">
+                    <h2 class="text-xl text-blue-600 font-semibold">${
+                      data.institution.name
+                    }</h2>
+                    ${
+                      data.institution.department
+                        ? `<p class="text-gray-600 mt-1">${data.institution.department}</p>`
+                        : ""
+                    }
+                </div>
+            `;
+
+        // 更新進度資訊
+        document.getElementById("progressInfo").innerHTML = `
+                <div>
+                    <h3 class="font-medium text-gray-700">當前階段</h3>
+                    <p class="mt-1 text-lg">${data.progress.phase}</p>
+                </div>
+                <div>
+                    <h3 class="font-medium text-gray-700">最後更新</h3>
+                    <p class="mt-1">${new Date(
+                      data.progress.lastUpdate
+                    ).toLocaleDateString()}</p>
+                </div>
+            `;
+
+        // 更新時間軸
+        const timelineHTML = data.timeline
+          .map(
+            (item) => `
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="ml-2">
+                        <div class="text-sm text-gray-500">${new Date(
+                          item.date
+                        ).toLocaleDateString()}</div>
+                        <div class="font-medium">${item.event}</div>
+                        <div class="text-gray-600 mt-1">${
+                          item.description
+                        }</div>
+                    </div>
+                </div>
+            `
+          )
+          .join("");
+        document.getElementById("timelineContainer").innerHTML += timelineHTML;
+
+        // 更新場地資訊
+        const sitesHTML = data.sites
+          .map(
+            (site) => `
+                <div class="border-b border-gray-200 pb-4 last:border-b-0 last:pb-0">
+                    <h3 class="font-medium">${site.name}</h3>
+                    <p class="text-gray-600 mt-1">${site.type}</p>
+                    <p class="text-gray-500 text-sm mt-1">${site.location}</p>
+                    <div class="mt-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          site.status === "使用中"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-gray-100 text-gray-800"
+                        }">
+                            ${site.status}
+                        </span>
+                    </div>
+                </div>
+            `
+          )
+          .join("");
+        document.getElementById("sitesContainer").innerHTML = sitesHTML;
+
+        // 更新聯絡人資訊
+        const contactsHTML = data.contacts
+          .map(
+            (contact) => `
+                <div class="border rounded-lg p-4">
+                    <h3 class="font-medium">${contact.name}</h3>
+                    <p class="text-gray-600 text-sm mt-1">${contact.title}</p>
+                    <div class="mt-2 space-y-1">
+                        <p class="text-sm">
+                            <span class="text-gray-500">Email:</span>
+                            <a href="mailto:${
+                              contact.email
+                            }" class="text-blue-600">${contact.email}</a>
+                        </p>
+                        ${
+                          contact.phone
+                            ? `
+                            <p class="text-sm">
+                                <span class="text-gray-500">電話:</span>
+                                <a href="tel:${contact.phone}" class="text-blue-600">${contact.phone}</a>
+                            </p>
+                        `
+                            : ""
+                        }
+                    </div>
+                </div>
+            `
+          )
+          .join("");
+        document.getElementById("contactsContainer").innerHTML = contactsHTML;
+      }
+
+      // 初始化頁面
+      document.addEventListener("DOMContentLoaded", loadPartnerData);
+    </script>
+  </body>
+</html>

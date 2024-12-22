@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>國際合作夥伴系統 - 登入</title>
+    <title>國際合作夥伴系統 - 註冊</title>
     <link
       href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
       rel="stylesheet"
@@ -13,11 +13,11 @@
     <div class="min-h-screen flex items-center justify-center">
       <div class="bg-white p-8 rounded-lg shadow-lg w-96 space-y-6">
         <div class="text-center">
-          <h1 class="text-2xl font-bold text-gray-900">國際合作夥伴系統</h1>
-          <p class="mt-2 text-gray-600">請登入以繼續</p>
+          <h1 class="text-2xl font-bold text-gray-900">註冊新帳號</h1>
+          <p class="mt-2 text-gray-600">請填寫以下資訊</p>
         </div>
 
-        <form id="loginForm" class="space-y-4">
+        <form id="registerForm" class="space-y-4">
           <div>
             <label
               for="username"
@@ -48,19 +48,35 @@
             />
           </div>
 
+          <div>
+            <label
+              for="confirmPassword"
+              class="block text-sm font-medium text-gray-700"
+              >確認密碼</label
+            >
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+              required
+            />
+          </div>
+
           <button
             type="submit"
             class="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
           >
-            登入
+            註冊
           </button>
 
-          <!-- 添加註冊連結 -->
-          <div class="text-center text-sm">
-            <span class="text-gray-600">還沒有帳號？</span>
-            <a href="/register.html" class="text-blue-600 hover:text-blue-500"
-              >立即註冊</a
+          <div class="text-center">
+            <a
+              href="/index.html"
+              class="text-sm text-blue-600 hover:text-blue-500"
             >
+              已有帳號？點此登入
+            </a>
           </div>
         </form>
 
@@ -73,31 +89,42 @@
 
     <script>
       document
-        .getElementById("loginForm")
+        .getElementById("registerForm")
         .addEventListener("submit", async (e) => {
           e.preventDefault();
 
           const username = document.getElementById("username").value;
           const password = document.getElementById("password").value;
+          const confirmPassword =
+            document.getElementById("confirmPassword").value;
           const errorMessage = document.getElementById("errorMessage");
 
+          if (password !== confirmPassword) {
+            errorMessage.textContent = "兩次輸入的密碼不相符";
+            errorMessage.classList.remove("hidden");
+            return;
+          }
+
           try {
-            const response = await fetch("/api/auth/login", {
+            const response = await fetch("/api/auth/register", {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
               },
-              body: JSON.stringify({ username, password }),
+              body: JSON.stringify({
+                username,
+                password,
+                role: "user",
+                assignedCountries: [],
+              }),
             });
 
             const data = await response.json();
 
             if (response.ok) {
-              localStorage.setItem("token", data.token);
-              localStorage.setItem("user", JSON.stringify(data.user));
-              window.location.href = "/dashboard.html";
+              window.location.href = "/index.html?registered=true";
             } else {
-              errorMessage.textContent = data.message || "登入失敗";
+              errorMessage.textContent = data.message || "註冊失敗";
               errorMessage.classList.remove("hidden");
             }
           } catch (error) {
@@ -105,26 +132,6 @@
             errorMessage.classList.remove("hidden");
           }
         });
-
-      // 檢查是否從註冊頁面導向過來
-      window.addEventListener("load", () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get("registered") === "true") {
-          const errorMessage = document.getElementById("errorMessage");
-          errorMessage.textContent = "註冊成功！請登入";
-          errorMessage.classList.remove("hidden");
-          errorMessage.classList.remove(
-            "text-red-600",
-            "bg-red-50",
-            "border-red-200"
-          );
-          errorMessage.classList.add(
-            "text-green-600",
-            "bg-green-50",
-            "border-green-200"
-          );
-        }
-      });
     </script>
   </body>
 </html>

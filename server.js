@@ -1,12 +1,14 @@
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
 const app = express();
-const Partner = require("./models/partner");
+const Partner = require("./models/Partner");
 const authRoutes = require("./routes/auth");
-const { auth, checkCountryAccess } = require("./middleware/auth");
+
+const dashboardRoutes = require("./routes/dashboard");
 
 // Middleware
 app.use(cors());
@@ -23,27 +25,33 @@ mongoose
     console.error("MongoDB connection error:", error);
   });
 
-// 認證路由
+// 使用認證路由
 app.use("/api/auth", authRoutes);
 
-// 需要認證的 API 路由
-app.get("/api/partners", auth, async (req, res) => {
+// 測試路由 - 檢查用戶
+app.get("/api/check-users", async (req, res) => {
   try {
-    let partners;
-    if (req.user.role === "admin") {
-      partners = await Partner.find();
-    } else {
-      partners = await Partner.find({
-        country: { $in: req.user.assignedCountries },
-      });
-    }
+    const User = require("./models/User");
+    const users = await User.find({});
+    console.log("現有用戶：", users);
+    res.json(users);
+  } catch (error) {
+    console.error("查詢用戶錯誤：", error);
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// Partners API routes
+app.get("/api/partners", async (req, res) => {
+  try {
+    const partners = await Partner.find();
     res.json(partners);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
 
-app.post("/api/partners", auth, checkCountryAccess, async (req, res) => {
+app.post("/api/partners", async (req, res) => {
   try {
     const partner = new Partner(req.body);
     const newPartner = await partner.save();
@@ -53,7 +61,12 @@ app.post("/api/partners", auth, checkCountryAccess, async (req, res) => {
   }
 });
 
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 5000;
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
+const userRoutes = require("./routes/users");
+app.use("/api/users", userRoutes);
+
+app.use("/api/dashboard", dashboardRoutes);

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>使用者管理</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="bg-gray-50">
+    <!-- 導航欄 -->
+    <nav class="bg-white shadow-sm">
+      <div class="max-w-7xl mx-auto px-4">
+        <div class="flex justify-between h-16">
+          <div class="flex items-center">
+            <span class="text-xl font-semibold">使用者管理</span>
+          </div>
+          <div class="flex items-center">
+            <a
+              href="/dashboard.html"
+              class="mr-4 text-blue-600 hover:text-blue-800"
+              >返回儀表板</a
+            >
+            <span id="userName" class="mr-4"></span>
+            <button
+              onclick="logout()"
+              class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+            >
+              登出
+            </button>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+    <div class="max-w-7xl mx-auto py-6 px-4">
+      <!-- 使用者列表 -->
+      <div class="bg-white shadow rounded-lg">
+        <div class="px-4 py-5 border-b border-gray-200">
+          <h2 class="text-lg font-medium">使用者列表</h2>
+        </div>
+        <div class="p-4">
+          <table class="min-w-full">
+            <thead>
+              <tr>
+                <th class="px-6 py-3 border-b text-left">帳號</th>
+                <th class="px-6 py-3 border-b text-left">角色</th>
+                <th class="px-6 py-3 border-b text-left">已分配國家</th>
+                <th class="px-6 py-3 border-b text-left">操作</th>
+              </tr>
+            </thead>
+            <tbody id="userList">
+              <!-- 使用者資料將透過 JavaScript 動態載入 -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- 編輯權限的 Modal -->
+    <div id="editModal" class="fixed inset-0 bg-gray-500 bg-opacity-75 hidden">
+      <div class="flex items-center justify-center min-h-screen">
+        <div class="bg-white rounded-lg p-8 max-w-md w-full">
+          <h3 class="text-lg font-medium mb-4">編輯使用者權限</h3>
+          <div class="space-y-4">
+            <div id="editForm">
+              <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700"
+                  >國家選擇</label
+                >
+                <div class="mt-2 space-y-2" id="countryCheckboxes">
+                  <div>
+                    <input type="checkbox" id="country-th" value="泰國" />
+                    <label>泰國</label>
+                  </div>
+                  <div>
+                    <input type="checkbox" id="country-vn" value="越南" />
+                    <label>越南</label>
+                  </div>
+                  <div>
+                    <input type="checkbox" id="country-id" value="印尼" />
+                    <label>印尼</label>
+                  </div>
+                  <div>
+                    <input type="checkbox" id="country-in" value="印度" />
+                    <label>印度</label>
+                  </div>
+                  <div>
+                    <input type="checkbox" id="country-de" value="德國" />
+                    <label>德國</label>
+                  </div>
+                  <div>
+                    <input type="checkbox" id="country-us" value="美國" />
+                    <label>美國</label>
+                  </div>
+                </div>
+              </div>
+              <input type="hidden" id="editUserId" />
+            </div>
+            <div class="flex justify-end space-x-3">
+              <button
+                onclick="closeEditModal()"
+                class="px-4 py-2 border rounded-md hover:bg-gray-50"
+              >
+                取消
+              </button>
+              <button
+                onclick="saveUserPermissions()"
+                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
+              >
+                儲存
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let currentUserId = "";
+
+      // 檢查登入狀態
+      function checkAuth() {
+        const token = localStorage.getItem("token");
+        const user = JSON.parse(localStorage.getItem("user"));
+
+        if (!token || !user || user.role !== "admin") {
+          window.location.href = "/index.html";
+          return;
+        }
+
+        document.getElementById(
+          "userName"
+        ).textContent = `${user.username} (${user.role})`;
+        loadUsers();
+      }
+
+      // 載入使用者列表
+      async function loadUsers() {
+        try {
+          const token = localStorage.getItem("token");
+          const response = await fetch("/api/users", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          const users = await response.json();
+
+          const userList = document.getElementById("userList");
+          userList.innerHTML = users
+            .map(
+              (user) => `
+                    <tr>
+                        <td class="px-6 py-4 border-b">${user.username}</td>
+                        <td class="px-6 py-4 border-b">${user.role}</td>
+                        <td class="px-6 py-4 border-b">${
+                          user.assignedCountries.join(", ") || "無"
+                        }</td>
+                        <td class="px-6 py-4 border-b">
+                            ${
+                              user.role !== "admin"
+                                ? `
+                                <button onclick="openEditModal('${user._id}')" 
+                                        class="text-blue-600 hover:text-blue-800">
+                                    編輯權限
+                                </button>
+                            `
+                                : ""
+                            }
+                        </td>
+                    </tr>
+                `
+            )
+            .join("");
+        } catch (error) {
+          console.error("載入使用者失敗:", error);
+        }
+      }
+
+      // 開啟編輯 Modal
+      async function openEditModal(userId) {
+        currentUserId = userId;
+        const modal = document.getElementById("editModal");
+        modal.classList.remove("hidden");
+
+        try {
+          const token = localStorage.getItem("token");
+          const response = await fetch(`/api/users/${userId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+          const user = await response.json();
+
+          // 重置所有 checkbox
+          document
+            .querySelectorAll('#countryCheckboxes input[type="checkbox"]')
+            .forEach((checkbox) => {
+              checkbox.checked = user.assignedCountries.includes(
+                checkbox.value
+              );
+            });
+        } catch (error) {
+          console.error("載入使用者資料失敗:", error);
+        }
+      }
+
+      // 關閉編輯 Modal
+      function closeEditModal() {
+        document.getElementById("editModal").classList.add("hidden");
+        currentUserId = "";
+      }
+
+      // 儲存使用者權限
+      async function saveUserPermissions() {
+        try {
+          const selectedCountries = Array.from(
+            document.querySelectorAll(
+              '#countryCheckboxes input[type="checkbox"]:checked'
+            )
+          ).map((checkbox) => checkbox.value);
+
+          const token = localStorage.getItem("token");
+          const response = await fetch(
+            `/api/users/${currentUserId}/permissions`,
+            {
+              method: "PATCH",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
+              },
+              body: JSON.stringify({
+                assignedCountries: selectedCountries,
+              }),
+            }
+          );
+
+          if (response.ok) {
+            closeEditModal();
+            loadUsers();
+          } else {
+            const error = await response.json();
+            alert(error.message || "更新權限失敗");
+          }
+        } catch (error) {
+          console.error("更新權限失敗:", error);
+          alert("更新權限時發生錯誤");
+        }
+      }
+
+      // 登出功能
+      function logout() {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        window.location.href = "/index.html";
+      }
+
+      // 頁面載入時檢查權限
+      window.addEventListener("load", checkAuth);
+    </script>
+  </body>
+</html>

@@ -128,9 +128,9 @@ const User = mongoose.model("User", userSchema);
 //   }
 // };
 
-// 在非測試環境下執行初始化
-if (process.env.NODE_ENV !== "test") {
-  createDefaultAdmin();
-}
+// // 在非測試環境下執行初始化
+// if (process.env.NODE_ENV !== "test") {
+//   createDefaultAdmin();
+// }
 
 module.exports = User;

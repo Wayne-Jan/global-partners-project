@@ -332,37 +332,56 @@
           </div>
         `;
 
-        // 更新時間軸 - 使用新的時間軸格式
+        // 檢查用戶是否為管理員
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        const isAdmin = user.role === "admin";
+
+        // 更新時間軸
         const timelineHTML = data.timeline
           .map(
             (item) => `
-              <div class="timeline-item">
-                <div class="timeline-dot"></div>
-                <div class="timeline-content">
-                  <div class="timeline-title">
-                    ${item.event}
-                    <span class="timeline-badge badge-${
-                      item.type || "update"
-                    }">${getTimelineBadgeText(item.type)}</span>
-                  </div>
-                  <div class="timeline-date">${new Date(
-                    item.date
-                  ).toLocaleString("zh-TW")}</div>
-                  <div class="timeline-description">${item.description}</div>
-                </div>
-              </div>
-            `
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <div class="timeline-title">
+            ${item.event}
+            <div class="flex items-center">
+              <span class="timeline-badge badge-${
+                item.type || "update"
+              }">${getTimelineBadgeText(item.type)}</span>
+              ${
+                isAdmin
+                  ? `
+                <button 
+                  onclick="deleteTimelineEvent('${item._id}')"
+                  class="ml-2 text-red-600 hover:text-red-800 text-sm"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
+              `
+                  : ""
+              }
+            </div>
+          </div>
+          <div class="timeline-date">${new Date(item.date).toLocaleString(
+            "zh-TW"
+          )}</div>
+          <div class="timeline-description">${item.description}</div>
+        </div>
+      </div>
+    `
           )
           .join("");
 
         const timelineContainer = document.getElementById("timelineContainer");
         timelineContainer.innerHTML = `
-          <div class="timeline-line"></div>
-          ${timelineHTML}
-        `;
+    <div class="timeline-line"></div>
+    ${timelineHTML}
+  `;
 
         // 更新資源區塊
-        // 更新 resourcesHTML 的部分
         const resourcesHTML = (data.resources || [])
           .sort((a, b) => a.order - b.order)
           .map(
@@ -441,6 +460,38 @@
 
       // 初始化頁面
       document.addEventListener("DOMContentLoaded", loadPartnerData);
+
+      async function deleteTimelineEvent(eventId) {
+        if (!confirm("確定要刪除此事件嗎？")) {
+          return;
+        }
+
+        const token = localStorage.getItem("token");
+        const partnerId = window.partnerData._id;
+
+        try {
+          const response = await fetch(
+            `/api/partners/${partnerId}/timeline/${eventId}`,
+            {
+              method: "DELETE",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          // 重新載入合作夥伴資料以更新時間軸
+          await loadPartnerData();
+        } catch (error) {
+          console.error("Error deleting timeline event:", error);
+          alert("刪除事件時發生錯誤");
+        }
+      }
     </script>
   </body>
 </html>

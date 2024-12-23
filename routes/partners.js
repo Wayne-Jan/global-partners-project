@@ -35,6 +35,59 @@ router.get("/", async (req, res) => {
   }
 });
 
+// 刪除特定時間軸事件
+router.delete(
+  "/:partnerId/timeline/:eventId",
+  auth,
+  isAdmin,
+  async (req, res) => {
+    try {
+      console.log("Deleting timeline event:", req.params); // 添加偵錯日誌
+      const { partnerId, eventId } = req.params;
+
+      // 找到對應的合作夥伴
+      const partner = await Partner.findById(partnerId);
+      if (!partner) {
+        return res.status(404).json({ message: "找不到此合作夥伴" });
+      }
+
+      // 確認時間軸事件存在
+      if (!partner.timeline || !Array.isArray(partner.timeline)) {
+        return res.status(400).json({ message: "時間軸資料格式錯誤" });
+      }
+
+      // 找到並移除指定的時間軸事件
+      const timelineIndex = partner.timeline.findIndex(
+        (event) => event._id.toString() === eventId
+      );
+
+      if (timelineIndex === -1) {
+        return res.status(404).json({ message: "找不到此時間軸事件" });
+      }
+
+      // 移除該事件
+      partner.timeline.splice(timelineIndex, 1);
+
+      // 儲存更新後的合作夥伴資料
+      const updatedPartner = await partner.save();
+
+      res.json({
+        message: "時間軸事件已成功刪除",
+        timeline: updatedPartner.timeline,
+      });
+    } catch (error) {
+      console.error("Delete timeline error:", error); // 添加錯誤日誌
+      if (error.name === "CastError") {
+        return res.status(400).json({ message: "無效的ID格式" });
+      }
+      res.status(500).json({
+        message: "刪除時間軸事件失敗",
+        error: error.message,
+      });
+    }
+  }
+);
+
 // 獲取特定合作夥伴詳細資訊
 router.get("/:id", async (req, res) => {
   try {

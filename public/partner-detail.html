@@ -202,7 +202,7 @@
 
       <!-- 詳細資訊區塊 -->
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- 時間軸 -->
+        <!-- 時間軸 保持不變 -->
         <div class="bg-white rounded-lg shadow p-6">
           <h2 class="text-xl font-semibold mb-4">進度時間軸</h2>
           <div id="timelineContainer" class="timeline-container">
@@ -211,11 +211,11 @@
           </div>
         </div>
 
-        <!-- 場地資訊 -->
+        <!-- 相關資料 (替換原本的場地資訊) -->
         <div class="bg-white rounded-lg shadow p-6">
-          <h2 class="text-xl font-semibold mb-4">場地資訊</h2>
-          <div id="sitesContainer" class="space-y-4">
-            <!-- 場地資訊將由 JavaScript 動態填充 -->
+          <h2 class="text-xl font-semibold mb-4">相關資料</h2>
+          <div id="resourcesContainer" class="space-y-4">
+            <!-- 資源內容將由 JavaScript 動態填充 -->
           </div>
         </div>
       </div>
@@ -356,28 +356,35 @@
           ${timelineHTML}
         `;
 
-        // 更新場地資訊
-        const sitesHTML = data.sites
+        // 更新資源區塊
+        const resourcesHTML = (data.resources || [])
+          .sort((a, b) => a.order - b.order)
           .map(
-            (site) => `
-              <div class="border-b border-gray-200 pb-4 last:border-b-0 last:pb-0">
-                <h3 class="font-medium">${site.name}</h3>
-                <p class="text-gray-600 mt-1">${site.type}</p>
-                <p class="text-gray-500 text-sm mt-1">${site.location}</p>
-                <div class="mt-2">
-                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                    site.status === "使用中"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-gray-100 text-gray-800"
-                  }">
-                    ${site.status}
-                  </span>
+            (resource) => `
+              <div class="border rounded-lg p-4 mb-4">
+                <h3 class="font-medium text-lg mb-2">${resource.title}</h3>
+                <div class="prose max-w-none">
+                  ${
+                    resource.type === "link"
+                      ? `<a href="${resource.url}" target="_blank" class="text-blue-600 hover:underline">${resource.content}</a>`
+                      : `<p class="whitespace-pre-wrap">${resource.content}</p>`
+                  }
                 </div>
+                ${
+                  resource.url && resource.type !== "link"
+                    ? `<div class="mt-2">
+                        <a href="${resource.url}" target="_blank" class="text-sm text-blue-600 hover:underline">相關連結</a>
+                       </div>`
+                    : ""
+                }
               </div>
             `
           )
           .join("");
-        document.getElementById("sitesContainer").innerHTML = sitesHTML;
+
+        document.getElementById("resourcesContainer").innerHTML =
+          resourcesHTML ||
+          '<p class="text-gray-500 text-center">尚無相關資料</p>';
 
         // 更新聯絡人資訊
         const contactsHTML = data.contacts

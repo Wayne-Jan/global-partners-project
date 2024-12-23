@@ -51,15 +51,26 @@ const partnerSchema = new mongoose.Schema(
         default: Date.now,
       },
     },
-    sites: [
+    resources: [
       {
-        // 場地資訊（可多個）
-        name: String, // 場地名稱
-        type: String, // 場地類型
-        location: String, // 地址
-        status: {
+        title: String, // 區塊標題
+        content: String, // 文字內容
+        url: String, // 網址（選填）
+        type: {
+          // 內容類型
           type: String,
-          enum: ["規劃中", "建置中", "使用中", "暫停使用"],
+          enum: ["text", "link", "note"],
+          default: "text",
+        },
+        order: {
+          // 排序用
+          type: Number,
+          default: 0,
+        },
+        createdAt: {
+          // 建立時間
+          type: Date,
+          default: Date.now,
         },
       },
     ],

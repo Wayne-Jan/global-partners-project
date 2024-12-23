@@ -60,6 +60,10 @@
       .nav-item:hover {
         background-color: #f3f4f6;
       }
+
+      .url-field {
+        display: none;
+      }
     </style>
   </head>
   <body class="bg-gray-50">
@@ -162,20 +166,20 @@
           </div>
         </div>
 
-        <!-- 場地資訊 -->
+        <!-- 相關資料 -->
         <div class="bg-white shadow rounded-lg p-6">
           <div class="flex justify-between items-center mb-4">
-            <h2 class="text-xl font-semibold">場地資訊</h2>
+            <h2 class="text-xl font-semibold">相關資料</h2>
             <button
               type="button"
-              id="addSiteBtn"
+              id="addResourceBtn"
               class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
             >
-              新增場地
+              新增資料區塊
             </button>
           </div>
-          <div id="sitesContainer" class="space-y-4">
-            <!-- 場地表單會由 JavaScript 動態生成 -->
+          <div id="resourcesContainer" class="space-y-4">
+            <!-- 資源區塊將由 JavaScript 動態生成 -->
           </div>
         </div>
 
@@ -223,62 +227,59 @@
       </form>
     </div>
 
-    <!-- 場地表單模板 -->
-    <template id="siteTemplate">
-      <div class="site-form border rounded-lg p-4">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <!-- 資源區塊模板 -->
+    <template id="resourceTemplate">
+      <div class="resource-form border rounded-lg p-4">
+        <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700"
-              >場地名稱</label
-            >
+            <label class="block text-sm font-medium text-gray-700">標題</label>
             <input
               type="text"
-              name="sites[INDEX][name]"
+              name="resources[INDEX][title]"
               required
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             />
           </div>
           <div>
             <label class="block text-sm font-medium text-gray-700"
-              >場地類型</label
-            >
-            <input
-              type="text"
-              name="sites[INDEX][type]"
-              required
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700">地址</label>
-            <input
-              type="text"
-              name="sites[INDEX][location]"
-              required
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-            />
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-700"
-              >使用狀態</label
+              >內容類型</label
             >
             <select
-              name="sites[INDEX][status]"
+              name="resources[INDEX][type]"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              onchange="handleTypeChange(this)"
+            >
+              <option value="text">文字</option>
+              <option value="link">連結</option>
+              <option value="note">備註</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700">內容</label>
+            <textarea
+              name="resources[INDEX][content]"
+              rows="3"
               required
               class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            ></textarea>
+          </div>
+          <div class="url-field">
+            <label class="block text-sm font-medium text-gray-700"
+              >相關連結</label
             >
-              <option value="規劃中">規劃中</option>
-              <option value="建置中">建置中</option>
-              <option value="使用中">使用中</option>
-              <option value="暫停使用">暫停使用</option>
-            </select>
+            <input
+              type="url"
+              name="resources[INDEX][url]"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              placeholder="https://"
+            />
           </div>
         </div>
         <button
           type="button"
-          class="remove-site mt-4 px-3 py-1 text-red-600 hover:text-red-800"
+          class="remove-resource mt-4 px-3 py-1 text-red-600 hover:text-red-800"
         >
-          刪除場地
+          刪除區塊
         </button>
       </div>
     </template>
@@ -333,12 +334,26 @@
     </template>
 
     <script>
-      let siteCount = 0;
+      let resourceCount = 0;
       let contactCount = 0;
-      let countries = {}; // 全局變數存儲國家資料
-      let isEditMode = false; // 編輯模式標記
+      let countries = {};
+      let isEditMode = false;
 
-      // 初始化國家選項
+      // 處理內容類型變更
+      function handleTypeChange(select) {
+        const form = select.closest(".resource-form");
+        const urlField = form.querySelector(".url-field");
+        const urlInput = urlField.querySelector("input");
+
+        if (select.value === "link") {
+          urlField.style.display = "block";
+          urlInput.required = true;
+        } else {
+          urlField.style.display = select.value === "text" ? "none" : "block";
+          urlInput.required = false;
+        }
+      }
+
       async function initializeCountries() {
         try {
           const token = localStorage.getItem("token");
@@ -354,8 +369,6 @@
 
           countries = await response.json();
           const select = document.getElementById("countrySelect");
-
-          // 清空現有選項，只保留預設選項
           select.innerHTML = '<option value="">請選擇國家</option>';
 
           Object.entries(countries).forEach(([code, data]) => {
@@ -370,28 +383,24 @@
         }
       }
 
-      // 添加場地
-      function addSite() {
-        const template = document.getElementById("siteTemplate");
-        const container = document.getElementById("sitesContainer");
+      function addResource() {
+        const template = document.getElementById("resourceTemplate");
+        const container = document.getElementById("resourcesContainer");
         const clone = template.content.cloneNode(true);
 
-        // 更新索引
         clone.querySelectorAll('[name*="INDEX"]').forEach((input) => {
-          input.name = input.name.replace("INDEX", siteCount);
+          input.name = input.name.replace("INDEX", resourceCount);
         });
 
         container.appendChild(clone);
-        siteCount++;
+        resourceCount++;
       }
 
-      // 添加聯絡人
       function addContact() {
         const template = document.getElementById("contactTemplate");
         const container = document.getElementById("contactsContainer");
         const clone = template.content.cloneNode(true);
 
-        // 更新索引
         clone.querySelectorAll('[name*="INDEX"]').forEach((input) => {
           input.name = input.name.replace("INDEX", contactCount);
         });
@@ -400,13 +409,23 @@
         contactCount++;
       }
 
-      // 表單提交處理
       async function handleSubmit(event) {
         event.preventDefault();
 
         const formData = new FormData(event.target);
         const urlParams = new URLSearchParams(window.location.search);
         const partnerId = urlParams.get("id");
+
+        // 如果是編輯模式，保留原有的 timeline
+        let timeline = [];
+        if (partnerId) {
+          const existingData = await fetch(`/api/partners/${partnerId}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          }).then((r) => r.json());
+          timeline = existingData.timeline || [];
+        }
 
         const data = {
           country: {
@@ -426,7 +445,8 @@
             details: formData.get("progressDetails"),
             lastUpdate: new Date(),
           },
-          sites: [],
+          timeline: timeline,
+          resources: [],
           contacts: [],
         };
 
@@ -451,24 +471,23 @@
           return;
         }
 
-        // 收集場地資訊
-        for (let i = 0; i < siteCount; i++) {
-          const siteName = formData.get(`sites[${i}][name]`);
-          if (siteName) {
-            const site = {
-              name: siteName,
-              type: formData.get(`sites[${i}][type]`),
-              location: formData.get(`sites[${i}][location]`),
-              status: formData.get(`sites[${i}][status]`),
+        // 收集資源資訊
+        for (let i = 0; i < resourceCount; i++) {
+          const resourceTitle = formData.get(`resources[${i}][title]`);
+          if (resourceTitle) {
+            const resource = {
+              title: resourceTitle,
+              type: formData.get(`resources[${i}][type]`),
+              content: formData.get(`resources[${i}][content]`),
+              url: formData.get(`resources[${i}][url]`),
             };
 
-            // 場地資料驗證
-            if (!site.type || !site.location || !site.status) {
-              alert(`請完整填寫場地 "${siteName}" 的所有必填資訊`);
+            if (!resource.content) {
+              alert(`請完整填寫資料區塊 "${resourceTitle}" 的內容`);
               return;
             }
 
-            data.sites.push(site);
+            data.resources.push(resource);
           }
         }
 
@@ -483,13 +502,11 @@
               phone: formData.get(`contacts[${i}][phone]`),
             };
 
-            // 聯絡人資料驗證
             if (!contact.title || !contact.email) {
               alert(`請完整填寫聯絡人 "${contactName}" 的所有必填資訊`);
               return;
             }
 
-            // Email 格式驗證
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(contact.email)) {
               alert(`聯絡人 "${contactName}" 的 Email 格式不正確`);
@@ -536,14 +553,12 @@
         }
       }
 
-      // 刪除合作夥伴
       async function handleDelete() {
         const urlParams = new URLSearchParams(window.location.search);
         const partnerId = urlParams.get("id");
 
         if (!partnerId) return;
 
-        // 確認提示
         if (!confirm("確定要刪除此合作夥伴嗎？此操作無法復原。")) {
           return;
         }
@@ -574,17 +589,13 @@
         }
       }
 
-      // 填充表單資料
       function populateForm(data) {
-        // 清空現有的場地和聯絡人容器
-        document.getElementById("sitesContainer").innerHTML = "";
+        document.getElementById("resourcesContainer").innerHTML = "";
         document.getElementById("contactsContainer").innerHTML = "";
 
-        // 重置計數器
-        siteCount = 0;
+        resourceCount = 0;
         contactCount = 0;
 
-        // 基本資訊
         document.querySelector('[name="country"]').value = data.country.code;
         document.querySelector('[name="institution"]').value =
           data.institution.name;
@@ -592,28 +603,35 @@
           data.institution.department || "";
         document.querySelector('[name="projectName"]').value =
           data.project.name;
-
-        // 進度資訊
         document.querySelector('[name="phase"]').value = data.progress.phase;
         document.querySelector('[name="progressDetails"]').value =
           data.progress.details || "";
 
-        // 場地資訊
-        data.sites.forEach((site) => {
-          addSite();
-          const lastIndex = siteCount - 1;
-          document.querySelector(`[name="sites[${lastIndex}][name]"]`).value =
-            site.name;
-          document.querySelector(`[name="sites[${lastIndex}][type]"]`).value =
-            site.type;
-          document.querySelector(
-            `[name="sites[${lastIndex}][location]"]`
-          ).value = site.location;
-          document.querySelector(`[name="sites[${lastIndex}][status]"]`).value =
-            site.status;
-        });
+        if (data.resources && data.resources.length > 0) {
+          data.resources.forEach((resource) => {
+            addResource();
+            const lastIndex = resourceCount - 1;
+            document.querySelector(
+              `[name="resources[${lastIndex}][title]"]`
+            ).value = resource.title;
+            document.querySelector(
+              `[name="resources[${lastIndex}][type]"]`
+            ).value = resource.type;
+            document.querySelector(
+              `[name="resources[${lastIndex}][content]"]`
+            ).value = resource.content;
+            if (resource.url) {
+              document.querySelector(
+                `[name="resources[${lastIndex}][url]"]`
+              ).value = resource.url;
+            }
+            // 觸發類型變更處理
+            handleTypeChange(
+              document.querySelector(`[name="resources[${lastIndex}][type]"]`)
+            );
+          });
+        }
 
-        // 聯絡人資訊
         data.contacts.forEach((contact) => {
           addContact();
           const lastIndex = contactCount - 1;
@@ -632,24 +650,20 @@
         });
       }
 
-      // 權限檢查
       async function checkPermissions() {
         const user = JSON.parse(localStorage.getItem("user") || "{}");
         const urlParams = new URLSearchParams(window.location.search);
         const partnerId = urlParams.get("id");
 
-        // 如果沒有用戶資訊，導向登入頁面
         if (!user || !user.role) {
           window.location.href = "/login.html";
           return;
         }
 
-        // 如果是管理員，直接允許訪問
         if (user.role === "admin") {
           return;
         }
 
-        // 對一般用戶，檢查是否有該國家的權限
         try {
           const token = localStorage.getItem("token");
           if (!token) {
@@ -679,7 +693,6 @@
         }
       }
 
-      // 更新「返回列表」連結
       function updateBackLink(partnerId) {
         const backLink = document.querySelector(
           '.nav-item[href="/partners.html"]'
@@ -695,7 +708,6 @@
         }
       }
 
-      // 載入現有資料（如果是編輯模式）
       async function loadExistingData() {
         const urlParams = new URLSearchParams(window.location.search);
         const partnerId = urlParams.get("id");
@@ -732,29 +744,26 @@
         }
       }
 
-      // 設置事件監聽器
       function setupEventListeners() {
-        // 表單提交監聽
         const form = document.getElementById("partnerForm");
         if (form) {
           form.addEventListener("submit", handleSubmit);
         }
 
-        // 新增與刪除按鈕監聽
-        const addSiteBtn = document.getElementById("addSiteBtn");
+        const addResourceBtn = document.getElementById("addResourceBtn");
         const addContactBtn = document.getElementById("addContactBtn");
         const deleteBtn = document.getElementById("deleteBtn");
 
-        if (addSiteBtn) addSiteBtn.addEventListener("click", addSite);
+        if (addResourceBtn)
+          addResourceBtn.addEventListener("click", addResource);
         if (addContactBtn) addContactBtn.addEventListener("click", addContact);
         if (deleteBtn) deleteBtn.addEventListener("click", handleDelete);
 
-        // 使用事件委派處理動態元素的刪除
         document.addEventListener("click", (event) => {
-          if (event.target.classList.contains("remove-site")) {
-            const siteForm = event.target.closest(".site-form");
-            if (siteForm && confirm("確定要刪除此場地嗎？")) {
-              siteForm.remove();
+          if (event.target.classList.contains("remove-resource")) {
+            const resourceForm = event.target.closest(".resource-form");
+            if (resourceForm && confirm("確定要刪除此資料區塊嗎？")) {
+              resourceForm.remove();
             }
           } else if (event.target.classList.contains("remove-contact")) {
             const contactForm = event.target.closest(".contact-form");
@@ -765,7 +774,6 @@
         });
       }
 
-      // 初始化
       document.addEventListener("DOMContentLoaded", async () => {
         try {
           await checkPermissions();
@@ -774,10 +782,7 @@
 
           const urlParams = new URLSearchParams(window.location.search);
           const partnerId = urlParams.get("id");
-
-          // 更新「返回列表」連結
           updateBackLink(partnerId);
-
           await loadExistingData();
         } catch (error) {
           console.error("初始化失敗:", error);

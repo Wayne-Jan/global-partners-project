@@ -14,8 +14,29 @@ const partnerRoutes = require("./routes/partners");
 
 const app = express();
 
+// 定義允許的域名
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:5000",
+  "https://global-partners-nchu.onrender.com/", // 替換成您的 Render 網址
+];
+
 // Middleware
-app.use(cors());
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) === -1) {
+        return callback(new Error("CORS policy violation"), false);
+      }
+      return callback(null, true);
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
 app.use(express.json());
 
 // 登入狀態檢查中間件
@@ -46,6 +67,7 @@ mongoose
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "partners.html"));
 });
+
 app.use(express.static("public"));
 
 // API Routes

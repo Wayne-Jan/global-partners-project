@@ -61,8 +61,86 @@
         background-color: #f3f4f6;
       }
 
-      .url-field {
-        display: none;
+      /* 新增和修改的 CSS 部分 */
+
+      /* 統一所有 select 元素的高度和行高 */
+      select {
+        height: 2.5rem; /* 設置固定高度 */
+        line-height: 2.5rem; /* 與高度一致 */
+        padding-left: 0.5rem; /* 增加左側內邊距以防止內容過於靠近邊緣 */
+        padding-right: 0.5rem; /* 增加右側內邊距 */
+        appearance: none; /* 移除預設的外觀，方便自定義 */
+        background-image: url('data:image/svg+xml;charset=UTF-8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><polygon points="5,7 10,12 15,7" fill="%234b5563"/></svg>');
+        background-repeat: no-repeat;
+        background-position: right 0.5rem center;
+        background-size: 1rem;
+      }
+
+      /* 調整 option 元素的對齊（部分瀏覽器可能不完全支持） */
+      option {
+        display: flex;
+        align-items: center;
+        height: 2.5rem; /* 與 select 高度一致 */
+        padding: 0 0.5rem;
+        font-size: 1rem;
+      }
+
+      /* 確保選項內的旗幟和文字垂直居中 */
+      .option-content {
+        display: flex;
+        align-items: center;
+      }
+
+      /* 旗幟的樣式調整 */
+      .option-content .flag {
+        margin-right: 0.5rem;
+        display: inline-block;
+        font-size: 1rem; /* 調整旗幟大小以匹配文字 */
+        line-height: 1;
+      }
+
+      /* 自定義選擇器的下拉箭頭 */
+      select::-ms-expand {
+        display: none; /* IE10+ */
+      }
+
+      /* 美化 select 元素的下拉箭頭（其他瀏覽器） */
+      .select-wrapper {
+        position: relative;
+      }
+
+      .select-wrapper::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        right: 1rem;
+        width: 0;
+        height: 0;
+        pointer-events: none;
+        border-left: 5px solid transparent;
+        border-right: 5px solid transparent;
+        border-top: 5px solid #4b5563;
+        transform: translateY(-50%);
+      }
+
+      /* 調整其他表單元素的樣式以保持一致性 */
+      input[type="text"],
+      input[type="email"],
+      input[type="tel"],
+      textarea {
+        height: 2.5rem; /* 與 select 高度一致 */
+        line-height: 2.5rem;
+      }
+
+      textarea {
+        height: auto; /* 讓 textarea 根據內容自動調整高度 */
+        min-height: 3rem;
+      }
+
+      button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
       }
     </style>
   </head>

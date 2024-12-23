@@ -161,6 +161,13 @@
         const user = JSON.parse(localStorage.getItem("user") || "{}");
         const navButtons = document.getElementById("navButtons");
 
+        // 添加返回按鈕
+        let navHTML = `
+          <a href="/partners.html" class="nav-item">
+            返回列表
+          </a>
+        `;
+
         console.log("Checking permissions:");
         console.log("User data:", user);
         console.log("Partner data:", window.partnerData);
@@ -177,15 +184,19 @@
         console.log("Assigned countries:", user.assignedCountries);
         console.log("Current country code:", window.partnerData?.country?.code);
 
-        if (hasPermission) {
+        // 如果有權限，添加編輯按鈕
+        if (hasPermission && window.partnerData?._id) {
           console.log("Adding edit button");
-          navButtons.innerHTML = `
-            <button onclick="location.href='/partner-management.html?id=${window.partnerData?._id}'"
-                    class="nav-item edit">
+          navHTML += `
+            <a href="/partner-management.html?id=${window.partnerData._id}" 
+               class="nav-item edit ml-4">
               編輯資料
-            </button>
+            </a>
           `;
         }
+
+        // 更新導航按鈕
+        navButtons.innerHTML = navHTML;
       }
 
       // 載入合作夥伴資料

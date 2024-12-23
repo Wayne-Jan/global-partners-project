@@ -735,11 +735,42 @@
       }
 
       // 權限檢查
+      // 修改後的權限檢查函數
       function checkPermissions() {
         const user = JSON.parse(localStorage.getItem("user") || "{}");
-        if (user.role !== "admin") {
-          window.location.href = "/partners.html";
+        const urlParams = new URLSearchParams(window.location.search);
+        const partnerId = urlParams.get("id");
+
+        // 如果沒有用戶資訊，導向登入頁面
+        if (!user || !user.role) {
+          window.location.href = "/login.html";
+          return;
         }
+
+        // 如果是管理員，直接允許訪問
+        if (user.role === "admin") {
+          return;
+        }
+
+        // 對一般用戶，檢查是否有該國家的權限
+        fetch(`/api/partners/${partnerId}`, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        })
+          .then((response) => response.json())
+          .then((partner) => {
+            const hasCountryPermission = (
+              user.assignedCountries || []
+            ).includes(partner.country.code);
+            if (!hasCountryPermission) {
+              window.location.href = "/partners.html";
+            }
+          })
+          .catch((error) => {
+            console.error("權限檢查失敗:", error);
+            window.location.href = "/partners.html";
+          });
       }
 
       // 初始化

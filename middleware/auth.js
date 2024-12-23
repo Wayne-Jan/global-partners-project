@@ -50,11 +50,6 @@ const auth = async (req, res, next) => {
       name: user.name,
     };
 
-    console.log("Authentication successful for user:", {
-      userId: user._id,
-      role: user.role,
-    });
-
     next();
   } catch (error) {
     console.error("Authentication error:", {

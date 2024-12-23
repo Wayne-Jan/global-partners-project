@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, "密碼為必填欄位"],
-      minlength: [6, "密碼至少需要6個字元"],
+      minlength: [4, "密碼至少需要6個字元"],
     },
     role: {
       type: String,
@@ -64,11 +64,11 @@ userSchema.pre("save", async function (next) {
   try {
     if (!this.isModified("password")) return next();
 
-    if (this.password.length < 6) {
-      throw new Error("密碼至少需要6個字元");
+    if (this.password.length < 3) {
+      throw new Error("密碼至少需要3個字元");
     }
 
-    const salt = await bcrypt.genSalt(12);
+    const salt = await bcrypt.genSalt(8);
     this.password = await bcrypt.hash(this.password, salt);
     next();
   } catch (error) {

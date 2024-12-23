@@ -70,10 +70,13 @@
         background-color: #1d4ed8;
       }
 
+      /* 新的時間軸樣式 */
       .timeline-container {
         position: relative;
         padding-left: 32px;
+        margin-top: 24px;
       }
+
       .timeline-line {
         position: absolute;
         left: 15px;
@@ -82,6 +85,7 @@
         width: 2px;
         background-color: #e5e7eb;
       }
+
       .timeline-dot {
         position: absolute;
         left: 11px;
@@ -89,15 +93,88 @@
         height: 10px;
         border-radius: 50%;
         background-color: #3b82f6;
+        border: 2px solid #fff;
+        box-shadow: 0 0 0 2px #3b82f6;
+        z-index: 1;
       }
+
       .timeline-item {
         position: relative;
         margin-bottom: 24px;
         padding-bottom: 24px;
         border-bottom: 1px solid #e5e7eb;
+        transition: all 0.3s ease;
+      }
+
+      .timeline-item:hover {
+        background-color: #f8fafc;
+        border-radius: 8px;
+        padding: 12px;
+        margin-left: -12px;
+      }
+
+      .timeline-content {
+        background-color: white;
+        border-radius: 8px;
+        padding: 16px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        margin-left: 12px;
+      }
+
+      .timeline-date {
+        color: #6b7280;
+        font-size: 0.875rem;
+        margin-bottom: 4px;
+      }
+
+      .timeline-title {
+        font-weight: 600;
+        color: #1f2937;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .timeline-description {
+        color: #4b5563;
+        font-size: 0.875rem;
+        line-height: 1.5;
+      }
+
+      .timeline-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+        margin-left: 8px;
+      }
+
+      .badge-update {
+        background-color: #dbeafe;
+        color: #1e40af;
+      }
+
+      .badge-create {
+        background-color: #dcfce7;
+        color: #166534;
+      }
+
+      .badge-delete {
+        background-color: #fee2e2;
+        color: #991b1b;
+      }
+
+      .timeline-item:last-child {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
       }
     </style>
   </head>
+
+  <!-- Body 部分保持不變 -->
   <body class="bg-gray-50">
     <!-- 導覽列 -->
     <nav class="nav-container">
@@ -161,32 +238,19 @@
         const user = JSON.parse(localStorage.getItem("user") || "{}");
         const navButtons = document.getElementById("navButtons");
 
-        // 添加返回按鈕
         let navHTML = `
           <a href="/partners.html" class="nav-item">
             返回列表
           </a>
         `;
 
-        console.log("Checking permissions:");
-        console.log("User data:", user);
-        console.log("Partner data:", window.partnerData);
-
-        // 檢查用戶是否為管理員或是否有該國家的權限
         const hasPermission =
           user.role === "admin" ||
           (user.assignedCountries || []).includes(
             window.partnerData?.country?.code
           );
 
-        console.log("Has permission:", hasPermission);
-        console.log("Role:", user.role);
-        console.log("Assigned countries:", user.assignedCountries);
-        console.log("Current country code:", window.partnerData?.country?.code);
-
-        // 如果有權限，添加編輯按鈕
         if (hasPermission && window.partnerData?._id) {
-          console.log("Adding edit button");
           navHTML += `
             <a href="/partner-management.html?id=${window.partnerData._id}" 
                class="nav-item edit ml-4">
@@ -195,7 +259,6 @@
           `;
         }
 
-        // 更新導航按鈕
         navButtons.innerHTML = navHTML;
       }
 
@@ -204,8 +267,6 @@
         const urlParams = new URLSearchParams(window.location.search);
         const partnerId = urlParams.get("id");
 
-        console.log("Loading partner data for ID:", partnerId);
-
         if (!partnerId) {
           window.location.href = "/partners.html";
           return;
@@ -213,23 +274,17 @@
 
         try {
           const token = localStorage.getItem("token");
-          console.log("Using token:", token ? "Token exists" : "No token");
-
           const response = await fetch(`/api/partners/${partnerId}`, {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           });
 
-          console.log("API Response status:", response.status);
-
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }
 
           const data = await response.json();
-          console.log("完整的合作夥伴資料:", JSON.stringify(data, null, 2));
-
           window.partnerData = data;
           updateUI(data);
           checkPermissions();
@@ -242,75 +297,83 @@
       function updateUI(data) {
         // 更新基本資訊
         document.getElementById("basicInfo").innerHTML = `
-                <div class="flex items-center space-x-4">
-                    <span class="text-4xl">${data.country.flag}</span>
-                    <h1 class="text-2xl font-bold">${data.country.name}</h1>
-                </div>
-                <div class="mt-4">
-                    <h2 class="text-xl text-blue-600 font-semibold">${
-                      data.institution.name
-                    }</h2>
-                    ${
-                      data.institution.department
-                        ? `<p class="text-gray-600 mt-1">${data.institution.department}</p>`
-                        : ""
-                    }
-                </div>
-            `;
+          <div class="flex items-center space-x-4">
+            <span class="text-4xl">${data.country.flag}</span>
+            <h1 class="text-2xl font-bold">${data.country.name}</h1>
+          </div>
+          <div class="mt-4">
+            <h2 class="text-xl text-blue-600 font-semibold">${
+              data.institution.name
+            }</h2>
+            ${
+              data.institution.department
+                ? `<p class="text-gray-600 mt-1">${data.institution.department}</p>`
+                : ""
+            }
+          </div>
+        `;
 
         // 更新進度資訊
         document.getElementById("progressInfo").innerHTML = `
-                <div>
-                    <h3 class="font-medium text-gray-700">當前階段</h3>
-                    <p class="mt-1 text-lg">${data.progress.phase}</p>
-                </div>
-                <div>
-                    <h3 class="font-medium text-gray-700">最後更新</h3>
-                    <p class="mt-1">${new Date(
-                      data.progress.lastUpdate
-                    ).toLocaleDateString()}</p>
-                </div>
-            `;
+          <div>
+            <h3 class="font-medium text-gray-700">當前階段</h3>
+            <p class="mt-1 text-lg">${data.progress.phase}</p>
+          </div>
+          <div>
+            <h3 class="font-medium text-gray-700">最後更新</h3>
+            <p class="mt-1">${new Date(
+              data.progress.lastUpdate
+            ).toLocaleDateString()}</p>
+          </div>
+        `;
 
-        // 更新時間軸
+        // 更新時間軸 - 使用新的時間軸格式
         const timelineHTML = data.timeline
           .map(
             (item) => `
-                <div class="timeline-item">
-                    <div class="timeline-dot"></div>
-                    <div class="ml-2">
-                        <div class="text-sm text-gray-500">${new Date(
-                          item.date
-                        ).toLocaleDateString()}</div>
-                        <div class="font-medium">${item.event}</div>
-                        <div class="text-gray-600 mt-1">${
-                          item.description
-                        }</div>
-                    </div>
+              <div class="timeline-item">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                  <div class="timeline-title">
+                    ${item.event}
+                    <span class="timeline-badge badge-${
+                      item.type || "update"
+                    }">${getTimelineBadgeText(item.type)}</span>
+                  </div>
+                  <div class="timeline-date">${new Date(
+                    item.date
+                  ).toLocaleString("zh-TW")}</div>
+                  <div class="timeline-description">${item.description}</div>
                 </div>
+              </div>
             `
           )
           .join("");
-        document.getElementById("timelineContainer").innerHTML += timelineHTML;
+
+        const timelineContainer = document.getElementById("timelineContainer");
+        timelineContainer.innerHTML = `
+          <div class="timeline-line"></div>
+          ${timelineHTML}
+        `;
 
         // 更新場地資訊
         const sitesHTML = data.sites
           .map(
             (site) => `
-                <div class="border-b border-gray-200 pb-4 last:border-b-0 last:pb-0">
-                    <h3 class="font-medium">${site.name}</h3>
-                    <p class="text-gray-600 mt-1">${site.type}</p>
-                    <p class="text-gray-500 text-sm mt-1">${site.location}</p>
-                    <div class="mt-2">
-                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                          site.status === "使用中"
-                            ? "bg-green-100 text-green-800"
-                            : "bg-gray-100 text-gray-800"
-                        }">
-                            ${site.status}
-                        </span>
-                    </div>
+              <div class="border-b border-gray-200 pb-4 last:border-b-0 last:pb-0">
+                <h3 class="font-medium">${site.name}</h3>
+                <p class="text-gray-600 mt-1">${site.type}</p>
+                <p class="text-gray-500 text-sm mt-1">${site.location}</p>
+                <div class="mt-2">
+                  <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                    site.status === "使用中"
+                      ? "bg-green-100 text-green-800"
+                      : "bg-gray-100 text-gray-800"
+                  }">
+                    ${site.status}
+                  </span>
                 </div>
+              </div>
             `
           )
           .join("");
@@ -320,32 +383,42 @@
         const contactsHTML = data.contacts
           .map(
             (contact) => `
-                <div class="border rounded-lg p-4">
-                    <h3 class="font-medium">${contact.name}</h3>
-                    <p class="text-gray-600 text-sm mt-1">${contact.title}</p>
-                    <div class="mt-2 space-y-1">
-                        <p class="text-sm">
-                            <span class="text-gray-500">Email:</span>
-                            <a href="mailto:${
-                              contact.email
-                            }" class="text-blue-600">${contact.email}</a>
-                        </p>
-                        ${
-                          contact.phone
-                            ? `
-                            <p class="text-sm">
-                                <span class="text-gray-500">電話:</span>
-                                <a href="tel:${contact.phone}" class="text-blue-600">${contact.phone}</a>
-                            </p>
-                        `
-                            : ""
-                        }
-                    </div>
+              <div class="border rounded-lg p-4">
+                <h3 class="font-medium">${contact.name}</h3>
+                <p class="text-gray-600 text-sm mt-1">${contact.title}</p>
+                <div class="mt-2 space-y-1">
+                  <p class="text-sm">
+                    <span class="text-gray-500">Email:</span>
+                    <a href="mailto:${contact.email}" class="text-blue-600">${
+              contact.email
+            }</a>
+                  </p>
+                  ${
+                    contact.phone
+                      ? `
+                      <p class="text-sm">
+                        <span class="text-gray-500">電話:</span>
+                        <a href="tel:${contact.phone}" class="text-blue-600">${contact.phone}</a>
+                      </p>
+                    `
+                      : ""
+                  }
                 </div>
+              </div>
             `
           )
           .join("");
         document.getElementById("contactsContainer").innerHTML = contactsHTML;
+      }
+
+      // 輔助函數：獲取時間軸徽章文字
+      function getTimelineBadgeText(type) {
+        const badgeTexts = {
+          create: "新增",
+          update: "更新",
+          delete: "刪除",
+        };
+        return badgeTexts[type] || "更新";
       }
 
       // 初始化頁面

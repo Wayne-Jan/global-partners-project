@@ -83,19 +83,41 @@ router.post("/", auth, isAdmin, async (req, res) => {
 // 更新合作夥伴資訊 (需要管理員權限)
 router.put("/:id", auth, isAdmin, async (req, res) => {
   try {
-    const updatedPartner = await Partner.findByIdAndUpdate(
-      req.params.id,
-      {
-        ...req.body,
-        updatedBy: req.user.userId,
-        updatedAt: new Date(),
-      },
-      { new: true, runValidators: true }
-    );
-
-    if (!updatedPartner) {
+    const oldPartner = await Partner.findById(req.params.id);
+    if (!oldPartner) {
       return res.status(404).json({ message: "找不到此合作夥伴" });
     }
+
+    // 檢查進度是否改變
+    const isProgressChanged =
+      oldPartner.progress.phase !== req.body.progress.phase;
+
+    // 準備更新資料
+    const updateData = {
+      ...req.body,
+      updatedBy: req.user.userId,
+      updatedAt: new Date(),
+    };
+
+    // 如果進度改變，添加時間軸記錄
+    if (isProgressChanged) {
+      const timelineEntry = {
+        date: new Date(),
+        event: `階段更新：${req.body.progress.phase}`,
+        description: req.body.progress.details || "",
+        type: "update", // 新增 type 欄位來標示更新類型
+      };
+
+      updateData.$push = {
+        timeline: timelineEntry,
+      };
+    }
+
+    const updatedPartner = await Partner.findByIdAndUpdate(
+      req.params.id,
+      updateData,
+      { new: true, runValidators: true }
+    );
 
     res.json(updatedPartner);
   } catch (error) {
@@ -105,10 +127,32 @@ router.put("/:id", auth, isAdmin, async (req, res) => {
         details: Object.values(error.errors).map((err) => err.message),
       });
     }
-    if (error.name === "CastError") {
-      return res.status(400).json({ message: "無效的合作夥伴ID" });
-    }
     res.status(500).json({ message: "更新合作夥伴失敗", error: error.message });
+  }
+});
+
+// 新增合作夥伴
+router.post("/", auth, isAdmin, async (req, res) => {
+  try {
+    // 添加初始時間軸記錄
+    const initialTimeline = {
+      date: new Date(),
+      event: "建立合作夥伴",
+      description: `初始階段：${req.body.progress.phase}`,
+      type: "create",
+    };
+
+    const partner = new Partner({
+      ...req.body,
+      timeline: [initialTimeline], // 加入初始時間軸記錄
+      createdBy: req.user.userId,
+      updatedBy: req.user.userId,
+    });
+
+    const newPartner = await partner.save();
+    res.status(201).json(newPartner);
+  } catch (error) {
+    // 錯誤處理...
   }
 });
 

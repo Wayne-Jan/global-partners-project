@@ -18,18 +18,18 @@ const app = express();
 const allowedOrigins = [
   "http://localhost:3000",
   "http://localhost:5000",
-  "https://global-partners-nchu.onrender.com/", // 替換成您的 Render 網址
+  "https://global-partners-nchu.onrender.com",
 ];
 
-// Middleware
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) === -1) {
-        return callback(new Error("CORS policy violation"), false);
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.log("Blocked by CORS:", origin);
+        callback(new Error("Not allowed by CORS"));
       }
-      return callback(null, true);
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],

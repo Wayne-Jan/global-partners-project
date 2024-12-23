@@ -6,51 +6,62 @@ const User = require("../models/User");
 // 登入路由
 router.post("/login", async (req, res) => {
   try {
+    console.log("Login attempt received:", {
+      username: req.body.username,
+      origin: req.get("origin"),
+    });
+
     const { username, password } = req.body;
+
+    // 檢查輸入
+    if (!username || !password) {
+      console.log("Missing credentials");
+      return res.status(400).json({
+        message: "請輸入帳號和密碼",
+        details: "缺少必要資訊",
+      });
+    }
 
     // 檢查用戶是否存在
     const user = await User.findOne({ username });
+
     if (!user) {
-      console.log("Login attempt failed: User not found -", username);
+      console.log("User not found:", username);
       return res.status(401).json({ message: "帳號或密碼錯誤" });
     }
 
     // 驗證密碼
     const isMatch = await user.comparePassword(password);
+
     if (!isMatch) {
-      console.log("Login attempt failed: Invalid password -", username);
+      console.log("Password verification failed for:", username);
       return res.status(401).json({ message: "帳號或密碼錯誤" });
     }
 
-    // 檢查帳號狀態
-    if (!user.isActive) {
-      console.log("Login attempt failed: Inactive account -", username);
-      return res.status(401).json({ message: "帳號已被停用" });
+    // 檢查 JWT_SECRET
+    if (!process.env.JWT_SECRET) {
+      console.error("JWT_SECRET not configured");
+      return res.status(500).json({
+        message: "伺服器設定錯誤",
+        details: "JWT 設定缺失",
+      });
     }
 
-    // 生成 JWT
+    // 生成 token
     const token = jwt.sign(
       {
         userId: user._id,
         role: user.role,
-        assignedCountries: user.assignedCountries,
+        username: user.username,
       },
       process.env.JWT_SECRET,
       { expiresIn: "24h" }
     );
 
-    // 設定 cookie
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 24 * 60 * 60 * 1000, // 24小時
+    console.log("Login successful:", {
+      username: user.username,
+      role: user.role,
     });
-
-    // 更新最後登入時間
-    await user.updateLastLogin();
-
-    console.log("Login successful:", username);
 
     res.json({
       token,
@@ -59,15 +70,19 @@ router.post("/login", async (req, res) => {
         username: user.username,
         role: user.role,
         assignedCountries: user.assignedCountries,
-        name: user.name,
-        email: user.email,
       },
     });
   } catch (error) {
-    console.error("登入錯誤:", error);
+    console.error("Login error:", {
+      error: error.message,
+      stack: error.stack,
+      body: req.body,
+    });
+
     res.status(500).json({
       message: "伺服器錯誤",
-      error: process.env.NODE_ENV === "development" ? error.message : undefined,
+      error:
+        process.env.NODE_ENV === "development" ? error.message : "請稍後再試",
     });
   }
 });

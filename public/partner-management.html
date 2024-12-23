@@ -200,6 +200,14 @@
         <div class="flex justify-end">
           <button
             type="button"
+            id="deleteBtn"
+            style="display: none"
+            class="mr-4 px-6 py-2 bg-red-600 text-white rounded-md hover:bg-red-700"
+          >
+            刪除合作夥伴
+          </button>
+          <button
+            type="button"
             onclick="history.back()"
             class="mr-4 px-6 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
           >
@@ -327,6 +335,8 @@
     <script>
       let siteCount = 0;
       let contactCount = 0;
+      let countries = {}; // 新增全局變數存儲國家資料
+      let isEditMode = false; // 新增編輯模式標記
 
       // 初始化國家選項
       async function initializeCountries() {
@@ -342,7 +352,7 @@
             throw new Error("無法獲取國家列表");
           }
 
-          const countries = await response.json();
+          countries = await response.json(); // 保存到全局變數
           const select = document.getElementById("countrySelect");
 
           Object.entries(countries).forEach(([code, data]) => {
@@ -392,6 +402,8 @@
         event.preventDefault();
 
         const formData = new FormData(event.target);
+        const partnerId = new URLSearchParams(window.location.search).get("id");
+
         const data = {
           country: {
             code: formData.get("country"),
@@ -490,8 +502,13 @@
             throw new Error("未登入狀態");
           }
 
-          const response = await fetch("/api/partners", {
-            method: "POST",
+          const url = partnerId
+            ? `/api/partners/${partnerId}`
+            : "/api/partners";
+          const method = partnerId ? "PUT" : "POST";
+
+          const response = await fetch(url, {
+            method: method,
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
@@ -499,14 +516,12 @@
             body: JSON.stringify(data),
           });
 
-          // 除錯日誌
           const responseData = await response.json();
 
           if (!response.ok) {
             throw new Error(responseData.message || "儲存失敗");
           }
 
-          // 儲存成功
           alert("儲存成功！");
           window.location.href = "/partners.html";
         } catch (error) {
@@ -517,30 +532,60 @@
 
       // 事件監聽器設置
       function setupEventListeners() {
-        // 刪除場地/聯絡人的事件監聽
+        // 表單提交監聽
+        const form = document.getElementById("partnerForm");
+        if (form) {
+          form.addEventListener("submit", handleSubmit);
+        }
+
+        // 新增與刪除按鈕監聽
+        const addSiteBtn = document.getElementById("addSiteBtn");
+        const addContactBtn = document.getElementById("addContactBtn");
+        const deleteBtn = document.getElementById("deleteBtn");
+
+        if (addSiteBtn) addSiteBtn.addEventListener("click", addSite);
+        if (addContactBtn) addContactBtn.addEventListener("click", addContact);
+        if (deleteBtn) deleteBtn.addEventListener("click", handleDelete);
+
+        // 使用事件委派處理動態元素的刪除
         document.addEventListener("click", (event) => {
           if (event.target.classList.contains("remove-site")) {
-            event.target.closest(".site-form").remove();
+            const siteForm = event.target.closest(".site-form");
+            if (siteForm && confirm("確定要刪除此場地嗎？")) {
+              siteForm.remove();
+            }
           } else if (event.target.classList.contains("remove-contact")) {
-            event.target.closest(".contact-form").remove();
+            const contactForm = event.target.closest(".contact-form");
+            if (contactForm && confirm("確定要刪除此聯絡人嗎？")) {
+              contactForm.remove();
+            }
           }
         });
-
-        // 表單提交的事件監聽
-        document
-          .getElementById("partnerForm")
-          .addEventListener("submit", handleSubmit);
       }
 
-      // 頁面載入時初始化
-      document.addEventListener("DOMContentLoaded", setupEventListeners);
+      // 初始化
+      document.addEventListener("DOMContentLoaded", async () => {
+        try {
+          await checkPermissions();
+          await initializeCountries();
+          setupEventListeners();
+          await loadExistingData();
+        } catch (error) {
+          console.error("初始化失敗:", error);
+          alert("頁面初始化失敗，請重新整理或聯繫管理員");
+        }
+      });
 
       // 載入現有資料（如果是編輯模式）
+      // 在 loadExistingData 函數中，顯示刪除按鈕
       async function loadExistingData() {
         const urlParams = new URLSearchParams(window.location.search);
         const partnerId = urlParams.get("id");
 
         if (partnerId) {
+          // 顯示刪除按鈕
+          document.getElementById("deleteBtn").style.display = "block";
+
           try {
             const response = await fetch(`/api/partners/${partnerId}`, {
               headers: {
@@ -559,6 +604,65 @@
           }
         }
       }
+
+      // 添加刪除功能
+      async function handleDelete() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const partnerId = urlParams.get("id");
+
+        if (!partnerId) return;
+
+        // 確認提示
+        if (!confirm("確定要刪除此合作夥伴嗎？此操作無法復原。")) {
+          return;
+        }
+
+        try {
+          const token = localStorage.getItem("token");
+          if (!token) {
+            throw new Error("未登入狀態");
+          }
+
+          const response = await fetch(`/api/partners/${partnerId}`, {
+            method: "DELETE",
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          if (!response.ok) {
+            const data = await response.json();
+            throw new Error(data.message || "刪除失敗");
+          }
+
+          alert("已成功刪除合作夥伴");
+          window.location.href = "/partners.html";
+        } catch (error) {
+          console.error("Error details:", error);
+          alert(`刪除失敗: ${error.message}`);
+        }
+      }
+
+      // 在初始化時加入刪除按鈕的事件監聽
+      document.addEventListener("DOMContentLoaded", () => {
+        checkPermissions();
+        initializeCountries();
+        loadExistingData();
+
+        // 事件監聽
+        document
+          .getElementById("addSiteBtn")
+          .addEventListener("click", addSite);
+        document
+          .getElementById("addContactBtn")
+          .addEventListener("click", addContact);
+        document
+          .getElementById("partnerForm")
+          .addEventListener("submit", handleSubmit);
+        document
+          .getElementById("deleteBtn")
+          .addEventListener("click", handleDelete);
+      });
 
       // 填充表單資料
       function populateForm(data) {

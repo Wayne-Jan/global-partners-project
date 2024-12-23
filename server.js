@@ -52,7 +52,7 @@ app.use(express.static("public"));
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/dashboard", dashboardRoutes);
-app.use("/api/partners", partnerRoutes); // 使用 partnerRoutes 處理所有 partner 相關請求
+app.use("/api/partners", partnerRoutes);
 
 // Handle frontend routes
 app.get("*", (req, res) => {

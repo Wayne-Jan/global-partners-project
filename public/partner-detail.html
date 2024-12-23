@@ -161,18 +161,30 @@
         const user = JSON.parse(localStorage.getItem("user") || "{}");
         const navButtons = document.getElementById("navButtons");
 
-        if (
+        console.log("Checking permissions:");
+        console.log("User data:", user);
+        console.log("Partner data:", window.partnerData);
+
+        // 檢查用戶是否為管理員或是否有該國家的權限
+        const hasPermission =
           user.role === "admin" ||
           (user.assignedCountries || []).includes(
-            window.partnerData?.country.code
-          )
-        ) {
+            window.partnerData?.country?.code
+          );
+
+        console.log("Has permission:", hasPermission);
+        console.log("Role:", user.role);
+        console.log("Assigned countries:", user.assignedCountries);
+        console.log("Current country code:", window.partnerData?.country?.code);
+
+        if (hasPermission) {
+          console.log("Adding edit button");
           navButtons.innerHTML = `
-                    <button onclick="location.href='/partner-management.html?id=${window.partnerData?._id}'"
-                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
-                        編輯資料
-                    </button>
-                `;
+            <button onclick="location.href='/partner-management.html?id=${window.partnerData?._id}'"
+                    class="nav-item edit">
+              編輯資料
+            </button>
+          `;
         }
       }
 
@@ -181,14 +193,32 @@
         const urlParams = new URLSearchParams(window.location.search);
         const partnerId = urlParams.get("id");
 
+        console.log("Loading partner data for ID:", partnerId);
+
         if (!partnerId) {
           window.location.href = "/partners.html";
           return;
         }
 
         try {
-          const response = await fetch(`/api/partners/${partnerId}`);
+          const token = localStorage.getItem("token");
+          console.log("Using token:", token ? "Token exists" : "No token");
+
+          const response = await fetch(`/api/partners/${partnerId}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
+
+          console.log("API Response status:", response.status);
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
           const data = await response.json();
+          console.log("完整的合作夥伴資料:", JSON.stringify(data, null, 2));
+
           window.partnerData = data;
           updateUI(data);
           checkPermissions();

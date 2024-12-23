@@ -1,6 +1,20 @@
 // models/Partner.js
 const mongoose = require("mongoose");
 
+const timelineSchema = new mongoose.Schema({
+  date: {
+    type: Date,
+    required: true,
+  },
+  event: {
+    type: String,
+    required: true,
+  },
+  description: {
+    type: String,
+  },
+});
+
 const partnerSchema = new mongoose.Schema(
   {
     country: {
@@ -58,6 +72,7 @@ const partnerSchema = new mongoose.Schema(
         phone: String, // 電話（選填）
       },
     ],
+    timeline: [timelineSchema], // 新增的時間軸屬性
     createdBy: {
       // 建立者
       type: mongoose.Schema.Types.ObjectId,

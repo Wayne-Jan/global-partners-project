@@ -294,43 +294,44 @@
       }
 
       // 更新 UI
+
       function updateUI(data) {
         // 更新基本資訊
         document.getElementById("basicInfo").innerHTML = `
-          <div class="relative">
-            <div class="absolute top-0 left-0 bg-blue-100 text-blue-800 px-3 py-1 rounded-bl-lg rounded-tr-lg text-sm font-medium">
-              ${data.project.name}
-            </div>
-            <div class="flex items-center space-x-4 pt-8">
-              <span class="text-4xl">${data.country.flag}</span>
-              <h1 class="text-2xl font-bold">${data.country.name}</h1>
-            </div>
-            <div class="mt-4">
-              <h2 class="text-xl text-blue-600 font-semibold">${
-                data.institution.name
-              }</h2>
-              ${
-                data.institution.department
-                  ? `<p class="text-gray-600 mt-1">${data.institution.department}</p>`
-                  : ""
-              }
-            </div>
-          </div>
-        `;
+    <div class="relative">
+      <div class="absolute top-0 left-0 bg-blue-100 text-blue-800 px-3 py-1 rounded-bl-lg rounded-tr-lg text-sm font-medium">
+        ${data.project.name}
+      </div>
+      <div class="flex items-center space-x-4 pt-8">
+        <span class="text-4xl">${data.country.flag}</span>
+        <h1 class="text-2xl font-bold">${data.country.name}</h1>
+      </div>
+      <div class="mt-4">
+        <h2 class="text-xl text-blue-600 font-semibold">${
+          data.institution.name
+        }</h2>
+        ${
+          data.institution.department
+            ? `<p class="text-gray-600 mt-1">${data.institution.department}</p>`
+            : ""
+        }
+      </div>
+    </div>
+  `;
 
         // 更新進度資訊
         document.getElementById("progressInfo").innerHTML = `
-          <div>
-            <h3 class="font-medium text-gray-700">當前階段</h3>
-            <p class="mt-1 text-lg">${data.progress.phase}</p>
-          </div>
-          <div>
-            <h3 class="font-medium text-gray-700">最後更新</h3>
-            <p class="mt-1">${new Date(
-              data.progress.lastUpdate
-            ).toLocaleDateString()}</p>
-          </div>
-        `;
+    <div>
+      <h3 class="font-medium text-gray-700">當前階段</h3>
+      <p class="mt-1 text-lg">${data.progress.phase}</p>
+    </div>
+    <div>
+      <h3 class="font-medium text-gray-700">最後更新</h3>
+      <p class="mt-1">${new Date(
+        data.progress.lastUpdate
+      ).toLocaleDateString()}</p>
+    </div>
+  `;
 
         // 檢查用戶是否為管理員
         const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -340,38 +341,48 @@
         const timelineHTML = data.timeline
           .map(
             (item) => `
-      <div class="timeline-item">
-        <div class="timeline-dot"></div>
-        <div class="timeline-content">
-          <div class="timeline-title">
-            ${item.event}
-            <div class="flex items-center">
-              <span class="timeline-badge badge-${
-                item.type || "update"
-              }">${getTimelineBadgeText(item.type)}</span>
-              ${
-                isAdmin
-                  ? `
-                <button 
-                  onclick="deleteTimelineEvent('${item._id}')"
-                  class="ml-2 text-red-600 hover:text-red-800 text-sm"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
-              `
-                  : ""
-              }
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-content">
+            <div class="timeline-title">
+              ${item.event}
+              <div class="flex items-center">
+                <span class="timeline-badge badge-${
+                  item.type || "update"
+                }">${getTimelineBadgeText(item.type)}</span>
+                ${
+                  isAdmin
+                    ? `
+                  <button 
+                    onclick="editTimelineEvent('${item._id}', ${JSON.stringify(
+                        item
+                      ).replace(/"/g, "&quot;")})"
+                    class="ml-2 text-blue-600 hover:text-blue-800 text-sm"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                  </button>
+                  <button 
+                    onclick="deleteTimelineEvent('${item._id}')"
+                    class="ml-2 text-red-600 hover:text-red-800 text-sm"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                  `
+                    : ""
+                }
+              </div>
             </div>
+            <div class="timeline-date">${new Date(item.date).toLocaleString(
+              "zh-TW"
+            )}</div>
+            <div class="timeline-description">${item.description}</div>
           </div>
-          <div class="timeline-date">${new Date(item.date).toLocaleString(
-            "zh-TW"
-          )}</div>
-          <div class="timeline-description">${item.description}</div>
         </div>
-      </div>
-    `
+      `
           )
           .join("");
 
@@ -386,29 +397,29 @@
           .sort((a, b) => a.order - b.order)
           .map(
             (resource) => `
-    <div class="border rounded-lg p-4 mb-4">
-      <div class="flex justify-between items-center mb-2">
-        <h3 class="font-medium text-lg">${resource.title}</h3>
-        <span class="text-sm text-gray-500">
-          ${new Date(resource.createdAt).toLocaleString("zh-TW")}
-        </span>
-      </div>
-      <div class="prose max-w-none">
-        ${
-          resource.type === "link"
-            ? `<a href="${resource.url}" target="_blank" class="text-blue-600 hover:underline">${resource.content}</a>`
-            : `<p class="whitespace-pre-wrap">${resource.content}</p>`
-        }
-      </div>
-      ${
-        resource.url && resource.type !== "link"
-          ? `<div class="mt-2">
-              <a href="${resource.url}" target="_blank" class="text-sm text-blue-600 hover:underline">相關連結</a>
-             </div>`
-          : ""
-      }
-    </div>
-  `
+        <div class="border rounded-lg p-4 mb-4">
+          <div class="flex justify-between items-center mb-2">
+            <h3 class="font-medium text-lg">${resource.title}</h3>
+            <span class="text-sm text-gray-500">
+              ${new Date(resource.createdAt).toLocaleString("zh-TW")}
+            </span>
+          </div>
+          <div class="prose max-w-none">
+            ${
+              resource.type === "link"
+                ? `<a href="${resource.url}" target="_blank" class="text-blue-600 hover:underline">${resource.content}</a>`
+                : `<p class="whitespace-pre-wrap">${resource.content}</p>`
+            }
+          </div>
+          ${
+            resource.url && resource.type !== "link"
+              ? `<div class="mt-2">
+                  <a href="${resource.url}" target="_blank" class="text-sm text-blue-600 hover:underline">相關連結</a>
+                 </div>`
+              : ""
+          }
+        </div>
+      `
           )
           .join("");
 
@@ -420,29 +431,29 @@
         const contactsHTML = data.contacts
           .map(
             (contact) => `
-              <div class="border rounded-lg p-4">
-                <h3 class="font-medium">${contact.name}</h3>
-                <p class="text-gray-600 text-sm mt-1">${contact.title}</p>
-                <div class="mt-2 space-y-1">
-                  <p class="text-sm">
-                    <span class="text-gray-500">Email:</span>
-                    <a href="mailto:${contact.email}" class="text-blue-600">${
+        <div class="border rounded-lg p-4">
+          <h3 class="font-medium">${contact.name}</h3>
+          <p class="text-gray-600 text-sm mt-1">${contact.title}</p>
+          <div class="mt-2 space-y-1">
+            <p class="text-sm">
+              <span class="text-gray-500">Email:</span>
+              <a href="mailto:${contact.email}" class="text-blue-600">${
               contact.email
             }</a>
-                  </p>
-                  ${
-                    contact.phone
-                      ? `
-                      <p class="text-sm">
-                        <span class="text-gray-500">電話:</span>
-                        <a href="tel:${contact.phone}" class="text-blue-600">${contact.phone}</a>
-                      </p>
-                    `
-                      : ""
-                  }
-                </div>
-              </div>
-            `
+            </p>
+            ${
+              contact.phone
+                ? `
+                <p class="text-sm">
+                  <span class="text-gray-500">電話:</span>
+                  <a href="tel:${contact.phone}" class="text-blue-600">${contact.phone}</a>
+                </p>
+              `
+                : ""
+            }
+          </div>
+        </div>
+      `
           )
           .join("");
         document.getElementById("contactsContainer").innerHTML = contactsHTML;
@@ -459,7 +470,86 @@
       }
 
       // 初始化頁面
-      document.addEventListener("DOMContentLoaded", loadPartnerData);
+      // 在 DOMContentLoaded 事件中添加模態框
+      document.addEventListener("DOMContentLoaded", () => {
+        // 添加模態框 HTML
+        document.body.insertAdjacentHTML(
+          "beforeend",
+          `
+    <div id="editModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+          <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">編輯時間軸事件</h3>
+          <form id="editTimelineForm">
+            <input type="hidden" id="eventId">
+            <div class="mb-4">
+              <label class="block text-gray-700 text-sm font-bold mb-2" for="event">
+                事件標題
+              </label>
+              <input 
+                type="text" 
+                id="event" 
+                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              >
+            </div>
+            <div class="mb-4">
+              <label class="block text-gray-700 text-sm font-bold mb-2" for="date">
+                日期時間
+              </label>
+              <input 
+                type="datetime-local" 
+                id="date" 
+                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              >
+            </div>
+            <div class="mb-4">
+              <label class="block text-gray-700 text-sm font-bold mb-2" for="type">
+                事件類型
+              </label>
+              <select 
+                id="type" 
+                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+              >
+                <option value="create">新增</option>
+                <option value="update">更新</option>
+                <option value="delete">刪除</option>
+              </select>
+            </div>
+            <div class="mb-6">
+              <label class="block text-gray-700 text-sm font-bold mb-2" for="description">
+                描述
+              </label>
+              <textarea 
+                id="description" 
+                class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                rows="3"
+              ></textarea>
+            </div>
+            <div class="flex items-center justify-between">
+              <button 
+                type="submit" 
+                class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              >
+                儲存
+              </button>
+              <button 
+                type="button" 
+                onclick="closeEditModal()"
+                class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+              >
+                取消
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+    `
+        );
+
+        // 初始化頁面數據
+        loadPartnerData();
+      });
 
       async function deleteTimelineEvent(eventId) {
         if (!confirm("確定要刪除此事件嗎？")) {
@@ -492,6 +582,82 @@
           alert("刪除事件時發生錯誤");
         }
       }
+
+      // 添加編輯相關的 JavaScript 函數
+      function editTimelineEvent(eventId, eventData) {
+        const modal = document.getElementById("editModal");
+        const form = document.getElementById("editTimelineForm");
+
+        // 填充表單數據
+        document.getElementById("eventId").value = eventId;
+        document.getElementById("event").value = eventData.event;
+        document.getElementById("description").value = eventData.description;
+        document.getElementById("type").value = eventData.type || "update";
+
+        // 格式化日期時間
+        const date = new Date(eventData.date);
+        const formattedDate = date.toISOString().slice(0, 16);
+        document.getElementById("date").value = formattedDate;
+
+        // 顯示模態框
+        modal.classList.remove("hidden");
+
+        // 綁定表單提交事件
+        form.onsubmit = async (e) => {
+          e.preventDefault();
+          await updateTimelineEvent();
+        };
+      }
+
+      function closeEditModal() {
+        const modal = document.getElementById("editModal");
+        modal.classList.add("hidden");
+      }
+
+      async function updateTimelineEvent() {
+        const eventId = document.getElementById("eventId").value;
+        const partnerId = window.partnerData._id;
+        const token = localStorage.getItem("token");
+
+        const updatedData = {
+          event: document.getElementById("event").value,
+          description: document.getElementById("description").value,
+          type: document.getElementById("type").value,
+          date: new Date(document.getElementById("date").value).toISOString(),
+        };
+
+        try {
+          const response = await fetch(
+            `/api/partners/${partnerId}/timeline/${eventId}`,
+            {
+              method: "PUT",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(updatedData),
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          // 關閉模態框並重新載入數據
+          closeEditModal();
+          await loadPartnerData();
+        } catch (error) {
+          console.error("Error updating timeline event:", error);
+          alert("更新事件時發生錯誤");
+        }
+      }
+
+      // 添加點擊模態框外部關閉的功能
+      document.getElementById("editModal").addEventListener("click", (e) => {
+        if (e.target.id === "editModal") {
+          closeEditModal();
+        }
+      });
     </script>
   </body>
 </html>

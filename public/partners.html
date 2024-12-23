@@ -176,39 +176,74 @@
       async function loadPartners() {
         try {
           const response = await fetch("/api/partners");
-          const partners = await response.json();
+          const data = await response.json();
+
+          // 檢查響應格式並輸出到控制台以便調試
+          console.log("API Response:", data);
+
+          // 確保 data 是數組
+          const partners = Array.isArray(data)
+            ? data
+            : Array.isArray(data.partners)
+            ? data.partners
+            : [];
+
+          if (partners.length === 0) {
+            document.getElementById("partnersGrid").innerHTML =
+              '<div class="no-partners">目前尚無合作夥伴資料</div>';
+            return;
+          }
+
           displayPartners(partners);
         } catch (error) {
-          console.error("Error loading partners:", error);
+          console.error("載入合作夥伴資料時發生錯誤:", error);
+          document.getElementById("partnersGrid").innerHTML =
+            '<div class="error-message">載入資料時發生錯誤，請稍後再試</div>';
         }
       }
 
       // 顯示合作夥伴卡片
       function displayPartners(partners) {
+        if (!Array.isArray(partners)) {
+          console.error("partners 不是陣列:", partners);
+          return;
+        }
+
         const grid = document.getElementById("partnersGrid");
         grid.innerHTML = partners
-          .map(
-            (partner) => `
-                <div class="partner-card" onclick="location.href='/partner-detail.html?id=${
-                  partner._id
-                }'">
-                    <div class="partner-header">
-                        <span class="flag">${partner.country.flag}</span>
-                        <h2 class="country-name">${partner.country.name}</h2>
-                    </div>
-                    <p class="institution">${partner.institution.name}</p>
-                    ${
-                      partner.institution.department
-                        ? `<p class="details">${partner.institution.department}</p>`
-                        : ""
-                    }
-                    <div class="phase-section">
-                        <p class="phase-label">執行階段</p>
-                        <p class="phase-value">${partner.progress.phase}</p>
-                    </div>
-                </div>
-            `
-          )
+          .map((partner) => {
+            // 添加資料驗證
+            if (
+              !partner ||
+              !partner.country ||
+              !partner.institution ||
+              !partner.progress
+            ) {
+              console.error("合作夥伴資料格式不正確:", partner);
+              return "";
+            }
+
+            return `
+        <div class="partner-card" onclick="location.href='/partner-detail.html?id=${
+          partner._id
+        }'">
+          <div class="partner-header">
+            <span class="flag">${partner.country.flag || "🏳️"}</span>
+            <h2 class="country-name">${partner.country.name || "未知國家"}</h2>
+          </div>
+          <p class="institution">${partner.institution.name || "未知機構"}</p>
+          ${
+            partner.institution.department
+              ? `<p class="details">${partner.institution.department}</p>`
+              : ""
+          }
+          <div class="phase-section">
+            <p class="phase-label">執行階段</p>
+            <p class="phase-value">${partner.progress.phase || "未設定"}</p>
+          </div>
+        </div>
+      `;
+          })
           .join("");
       }
 

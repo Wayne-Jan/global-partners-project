@@ -352,8 +352,11 @@
             throw new Error("無法獲取國家列表");
           }
 
-          countries = await response.json(); // 保存到全局變數
+          countries = await response.json();
           const select = document.getElementById("countrySelect");
+
+          // 清空現有選項，只保留預設選項
+          select.innerHTML = '<option value="">請選擇國家</option>';
 
           Object.entries(countries).forEach(([code, data]) => {
             const option = document.createElement("option");
@@ -577,29 +580,38 @@
       });
 
       // 載入現有資料（如果是編輯模式）
-      // 在 loadExistingData 函數中，顯示刪除按鈕
+
       async function loadExistingData() {
         const urlParams = new URLSearchParams(window.location.search);
         const partnerId = urlParams.get("id");
 
         if (partnerId) {
-          // 顯示刪除按鈕
           document.getElementById("deleteBtn").style.display = "block";
 
           try {
+            const token = localStorage.getItem("token");
+            if (!token) {
+              throw new Error("未登入狀態");
+            }
+
             const response = await fetch(`/api/partners/${partnerId}`, {
               headers: {
-                Authorization: `Bearer ${localStorage.getItem("token")}`,
+                Authorization: `Bearer ${token}`,
               },
             });
 
-            if (response.ok) {
-              const data = await response.json();
-              populateForm(data);
-            } else {
+            if (!response.ok) {
               throw new Error("無法載入資料");
             }
+
+            const data = await response.json();
+            if (!data) {
+              throw new Error("資料格式錯誤");
+            }
+
+            populateForm(data);
           } catch (error) {
+            console.error("載入資料失敗:", error);
             alert(`載入失敗: ${error.message}`);
           }
         }
@@ -666,6 +678,14 @@
 
       // 填充表單資料
       function populateForm(data) {
+        // 清空現有的場地和聯絡人容器
+        document.getElementById("sitesContainer").innerHTML = "";
+        document.getElementById("contactsContainer").innerHTML = "";
+
+        // 重置計數器
+        siteCount = 0;
+        contactCount = 0;
+
         // 基本資訊
         document.querySelector('[name="country"]').value = data.country.code;
         document.querySelector('[name="institution"]').value =

@@ -1,10 +1,28 @@
-// routes/partners.js
 const express = require("express");
 const router = express.Router();
 const Partner = require("../models/Partner");
 const { auth, isAdmin } = require("../middleware/auth");
 
-// 獲取所有合作夥伴列表（添加分頁功能）
+// 取得國家列表 (放在最前面避免與 :id 路由衝突)
+router.get("/utils/countries", auth, async (req, res) => {
+  try {
+    const countries = {
+      TW: { name: "台灣", flag: "🇹🇼" },
+      US: { name: "美國", flag: "🇺🇸" },
+      JP: { name: "日本", flag: "🇯🇵" },
+      TH: { name: "泰國", flag: "🇹🇭" },
+      VN: { name: "越南", flag: "🇻🇳" },
+      ID: { name: "印尼", flag: "🇮🇩" },
+      IN: { name: "印度", flag: "🇮🇳" },
+      DE: { name: "德國", flag: "🇩🇪" },
+    };
+    res.json(countries);
+  } catch (error) {
+    res.status(500).json({ message: "獲取國家列表失敗", error: error.message });
+  }
+});
+
+// 獲取所有合作夥伴列表
 router.get("/", async (req, res) => {
   try {
     const page = parseInt(req.query.page) || 1;
@@ -29,34 +47,113 @@ router.get("/", async (req, res) => {
       },
     });
   } catch (error) {
-    res
-      .status(500)
-      .json({ message: "獲取合作夥伴列表失敗", error: error.message });
+    res.status(500).json({
+      message: "獲取合作夥伴列表失敗",
+      error: error.message,
+    });
   }
 });
 
-// 刪除特定時間軸事件
+// 新增合作夥伴
+router.post("/", auth, isAdmin, async (req, res) => {
+  try {
+    if (!req.user || !req.user.userId) {
+      return res.status(401).json({ message: "使用者驗證失敗" });
+    }
+
+    const initialTimeline = {
+      date: new Date(),
+      event: "建立合作夥伴",
+      description: `初始階段：${req.body.progress.phase}`,
+      type: "create",
+    };
+
+    const partner = new Partner({
+      ...req.body,
+      timeline: [initialTimeline],
+      createdBy: req.user.userId,
+      updatedBy: req.user.userId,
+    });
+
+    const newPartner = await partner.save();
+    res.status(201).json(newPartner);
+  } catch (error) {
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        message: "資料驗證失敗",
+        details: Object.values(error.errors).map((err) => err.message),
+      });
+    }
+    res.status(500).json({ message: "新增合作夥伴失敗", error: error.message });
+  }
+});
+
+// 更新時間軸事件
+router.put("/:partnerId/timeline/:eventId", auth, isAdmin, async (req, res) => {
+  try {
+    const { partnerId, eventId } = req.params;
+    const { event, description, phase, date } = req.body;
+
+    const partner = await Partner.findById(partnerId);
+    if (!partner) {
+      return res.status(404).json({ message: "找不到此合作夥伴" });
+    }
+
+    const timelineIndex = partner.timeline.findIndex(
+      (event) => event._id.toString() === eventId
+    );
+
+    if (timelineIndex === -1) {
+      return res.status(404).json({ message: "找不到此時間軸事件" });
+    }
+
+    // 保留原始的 _id
+    const originalEventId = partner.timeline[timelineIndex]._id;
+
+    partner.timeline[timelineIndex] = {
+      _id: originalEventId,
+      event,
+      description,
+      phase,
+      date: new Date(date),
+      updatedAt: new Date(),
+      updatedBy: req.user.userId,
+      type: partner.timeline[timelineIndex].type, // 保留原始的類型
+    };
+
+    const updatedPartner = await partner.save();
+
+    res.json({
+      message: "時間軸事件已成功更新",
+      timeline: updatedPartner.timeline,
+    });
+  } catch (error) {
+    console.error("Update timeline error:", error);
+    res.status(500).json({
+      message: "更新時間軸事件失敗",
+      error: error.message,
+    });
+  }
+});
+
+// 刪除時間軸事件
 router.delete(
   "/:partnerId/timeline/:eventId",
   auth,
   isAdmin,
   async (req, res) => {
     try {
-      console.log("Deleting timeline event:", req.params); // 添加偵錯日誌
       const { partnerId, eventId } = req.params;
-
-      // 找到對應的合作夥伴
       const partner = await Partner.findById(partnerId);
+
       if (!partner) {
         return res.status(404).json({ message: "找不到此合作夥伴" });
       }
 
-      // 確認時間軸事件存在
       if (!partner.timeline || !Array.isArray(partner.timeline)) {
         return res.status(400).json({ message: "時間軸資料格式錯誤" });
       }
 
-      // 找到並移除指定的時間軸事件
       const timelineIndex = partner.timeline.findIndex(
         (event) => event._id.toString() === eventId
       );
@@ -65,10 +162,7 @@ router.delete(
         return res.status(404).json({ message: "找不到此時間軸事件" });
       }
 
-      // 移除該事件
       partner.timeline.splice(timelineIndex, 1);
-
-      // 儲存更新後的合作夥伴資料
       const updatedPartner = await partner.save();
 
       res.json({
@@ -76,7 +170,7 @@ router.delete(
         timeline: updatedPartner.timeline,
       });
     } catch (error) {
-      console.error("Delete timeline error:", error); // 添加錯誤日誌
+      console.error("Delete timeline error:", error);
       if (error.name === "CastError") {
         return res.status(400).json({ message: "無效的ID格式" });
       }
@@ -100,48 +194,14 @@ router.get("/:id", async (req, res) => {
     if (error.name === "CastError") {
       return res.status(400).json({ message: "無效的合作夥伴ID" });
     }
-    res
-      .status(500)
-      .json({ message: "獲取合作夥伴資訊失敗", error: error.message });
-  }
-});
-
-// 新增合作夥伴 (需要管理員權限)
-router.post("/", auth, isAdmin, async (req, res) => {
-  try {
-    if (!req.user || !req.user.userId) {
-      return res.status(401).json({ message: "使用者驗證失敗" });
-    }
-
-    // 添加初始時間軸記錄
-    const initialTimeline = {
-      date: new Date(),
-      event: "建立合作夥伴",
-      description: `初始階段：${req.body.progress.phase}`,
-      type: "create",
-    };
-
-    const partner = new Partner({
-      ...req.body,
-      timeline: [initialTimeline], // 加入初始時間軸記錄
-      createdBy: req.user.userId,
-      updatedBy: req.user.userId,
+    res.status(500).json({
+      message: "獲取合作夥伴資訊失敗",
+      error: error.message,
     });
-
-    const newPartner = await partner.save();
-    res.status(201).json(newPartner);
-  } catch (error) {
-    if (error.name === "ValidationError") {
-      return res.status(400).json({
-        message: "資料驗證失敗",
-        details: Object.values(error.errors).map((err) => err.message),
-      });
-    }
-    res.status(500).json({ message: "新增合作夥伴失敗", error: error.message });
   }
 });
 
-// 更新合作夥伴資訊時
+// 更新合作夥伴資訊
 router.put("/:id", auth, isAdmin, async (req, res) => {
   try {
     const oldPartner = await Partner.findById(req.params.id);
@@ -149,7 +209,6 @@ router.put("/:id", auth, isAdmin, async (req, res) => {
       return res.status(404).json({ message: "找不到此合作夥伴" });
     }
 
-    // 確保新增的資源有時間戳記
     if (req.body.resources) {
       req.body.resources = req.body.resources.map((resource) => ({
         ...resource,
@@ -157,23 +216,18 @@ router.put("/:id", auth, isAdmin, async (req, res) => {
       }));
     }
 
-    // 檢查進度是否改變
     const isProgressChanged =
       oldPartner.progress.phase !== req.body.progress.phase;
-
-    // 準備更新資料
     const updateData = {
       ...req.body,
       updatedBy: req.user.userId,
       updatedAt: new Date(),
     };
 
-    // 如果沒有提供 timeline，則使用舊的
     if (!updateData.timeline) {
       updateData.timeline = oldPartner.timeline || [];
     }
 
-    // 如果進度改變，添加新的時間軸記錄
     if (isProgressChanged) {
       const timelineEntry = {
         date: new Date(),
@@ -198,44 +252,29 @@ router.put("/:id", auth, isAdmin, async (req, res) => {
         details: Object.values(error.errors).map((err) => err.message),
       });
     }
-    res.status(500).json({ message: "更新合作夥伴失敗", error: error.message });
+    res.status(500).json({
+      message: "更新合作夥伴失敗",
+      error: error.message,
+    });
   }
 });
 
-// 刪除合作夥伴 (需要管理員權限)
+// 刪除合作夥伴
 router.delete("/:id", auth, isAdmin, async (req, res) => {
   try {
     const result = await Partner.findByIdAndDelete(req.params.id);
-
     if (!result) {
       return res.status(404).json({ message: "找不到此合作夥伴" });
     }
-
     res.json({ message: "合作夥伴已成功刪除" });
   } catch (error) {
     if (error.name === "CastError") {
       return res.status(400).json({ message: "無效的合作夥伴ID" });
     }
-    res.status(500).json({ message: "刪除合作夥伴失敗", error: error.message });
-  }
-});
-
-// 取得國家列表
-router.get("/utils/countries", auth, async (req, res) => {
-  try {
-    const countries = {
-      TW: { name: "台灣", flag: "🇹🇼" },
-      US: { name: "美國", flag: "🇺🇸" },
-      JP: { name: "日本", flag: "🇯🇵" },
-      TH: { name: "泰國", flag: "🇹🇭" },
-      VN: { name: "越南", flag: "🇻🇳" },
-      ID: { name: "印尼", flag: "🇮🇩" },
-      IN: { name: "印度", flag: "🇮🇳" },
-      DE: { name: "德國", flag: "🇩🇪" },
-    };
-    res.json(countries);
-  } catch (error) {
-    res.status(500).json({ message: "獲取國家列表失敗", error: error.message });
+    res.status(500).json({
+      message: "刪除合作夥伴失敗",
+      error: error.message,
+    });
   }
 });
 

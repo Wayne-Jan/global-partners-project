@@ -101,32 +101,32 @@ userSchema.methods.hasCountryAccess = function (countryCode) {
 
 const User = mongoose.model("User", userSchema);
 
-// 創建預設管理員
-const createDefaultAdmin = async () => {
-  try {
-    const adminExists = await User.findOne({ username: "admin" });
+// // 創建預設管理員
+// const createDefaultAdmin = async () => {
+//   try {
+//     const adminExists = await User.findOne({ username: "admin" });
 
-    if (!adminExists) {
-      const adminData = {
-        username: "admin",
-        password: process.env.DEFAULT_ADMIN_PASSWORD || "admin",
-        role: "admin",
-        email: process.env.DEFAULT_ADMIN_EMAIL || "admin@example.com",
-        assignedCountries: ["*"],
-        name: "系統管理員",
-      };
+//     if (!adminExists) {
+//       const adminData = {
+//         username: "admin",
+//         password: process.env.DEFAULT_ADMIN_PASSWORD || "admin",
+//         role: "admin",
+//         email: process.env.DEFAULT_ADMIN_EMAIL || "admin@example.com",
+//         assignedCountries: ["*"],
+//         name: "系統管理員",
+//       };
 
-      const admin = await User.create(adminData);
-      console.log("成功創建預設管理員:", {
-        username: admin.username,
-        role: admin.role,
-        id: admin._id,
-      });
-    }
-  } catch (error) {
-    console.error("創建預設管理員失敗:", error);
-  }
-};
+//       const admin = await User.create(adminData);
+//       console.log("成功創建預設管理員:", {
+//         username: admin.username,
+//         role: admin.role,
+//         id: admin._id,
+//       });
+//     }
+//   } catch (error) {
+//     console.error("創建預設管理員失敗:", error);
+//   }
+// };
 
 // 在非測試環境下執行初始化
 if (process.env.NODE_ENV !== "test") {

@@ -59,12 +59,19 @@ router.post("/", auth, isAdmin, async (req, res) => {
       return res.status(401).json({ message: "使用者驗證失敗" });
     }
 
+    // 添加初始時間軸記錄
+    const initialTimeline = {
+      date: new Date(),
+      event: "建立合作夥伴",
+      description: `初始階段：${req.body.progress.phase}`,
+      type: "create",
+    };
+
     const partner = new Partner({
       ...req.body,
+      timeline: [initialTimeline], // 加入初始時間軸記錄
       createdBy: req.user.userId,
       updatedBy: req.user.userId,
-      createdAt: new Date(),
-      updatedAt: new Date(),
     });
 
     const newPartner = await partner.save();
@@ -99,18 +106,20 @@ router.put("/:id", auth, isAdmin, async (req, res) => {
       updatedAt: new Date(),
     };
 
-    // 如果進度改變，添加時間軸記錄
+    // 如果沒有提供 timeline，則使用舊的
+    if (!updateData.timeline) {
+      updateData.timeline = oldPartner.timeline || [];
+    }
+
+    // 如果進度改變，添加新的時間軸記錄
     if (isProgressChanged) {
       const timelineEntry = {
         date: new Date(),
         event: `階段更新：${req.body.progress.phase}`,
         description: req.body.progress.details || "",
-        type: "update", // 新增 type 欄位來標示更新類型
+        type: "update",
       };
-
-      updateData.$push = {
-        timeline: timelineEntry,
-      };
+      updateData.timeline = [...updateData.timeline, timelineEntry];
     }
 
     const updatedPartner = await Partner.findByIdAndUpdate(
@@ -128,31 +137,6 @@ router.put("/:id", auth, isAdmin, async (req, res) => {
       });
     }
     res.status(500).json({ message: "更新合作夥伴失敗", error: error.message });
-  }
-});
-
-// 新增合作夥伴
-router.post("/", auth, isAdmin, async (req, res) => {
-  try {
-    // 添加初始時間軸記錄
-    const initialTimeline = {
-      date: new Date(),
-      event: "建立合作夥伴",
-      description: `初始階段：${req.body.progress.phase}`,
-      type: "create",
-    };
-
-    const partner = new Partner({
-      ...req.body,
-      timeline: [initialTimeline], // 加入初始時間軸記錄
-      createdBy: req.user.userId,
-      updatedBy: req.user.userId,
-    });
-
-    const newPartner = await partner.save();
-    res.status(201).json(newPartner);
-  } catch (error) {
-    // 錯誤處理...
   }
 });
 

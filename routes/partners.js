@@ -88,12 +88,20 @@ router.post("/", auth, isAdmin, async (req, res) => {
   }
 });
 
-// 更新合作夥伴資訊 (需要管理員權限)
+// 更新合作夥伴資訊時
 router.put("/:id", auth, isAdmin, async (req, res) => {
   try {
     const oldPartner = await Partner.findById(req.params.id);
     if (!oldPartner) {
       return res.status(404).json({ message: "找不到此合作夥伴" });
+    }
+
+    // 確保新增的資源有時間戳記
+    if (req.body.resources) {
+      req.body.resources = req.body.resources.map((resource) => ({
+        ...resource,
+        createdAt: resource.createdAt || new Date(),
+      }));
     }
 
     // 檢查進度是否改變

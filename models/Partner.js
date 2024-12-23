@@ -27,8 +27,19 @@ const partnerSchema = new mongoose.Schema(
       department: String, // 部門（選填）
     },
     project: {
-      name: { type: String, required: true }, // 計畫名稱
-      description: String, // 描述（選填）
+      name: {
+        type: String,
+        required: true,
+        enum: [
+          "子計畫三",
+          "子計畫四",
+          "子計畫五",
+          "子計畫六",
+          "子計畫七",
+          "子計畫八",
+          "子計畫九",
+        ],
+      },
     },
     progress: {
       phase: {
@@ -53,22 +64,19 @@ const partnerSchema = new mongoose.Schema(
     },
     resources: [
       {
-        title: String, // 區塊標題
-        content: String, // 文字內容
-        url: String, // 網址（選填）
+        title: String,
+        content: String,
+        url: String,
         type: {
-          // 內容類型
           type: String,
           enum: ["text", "link", "note"],
           default: "text",
         },
         order: {
-          // 排序用
           type: Number,
           default: 0,
         },
         createdAt: {
-          // 建立時間
           type: Date,
           default: Date.now,
         },

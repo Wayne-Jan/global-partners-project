@@ -297,19 +297,24 @@
       function updateUI(data) {
         // 更新基本資訊
         document.getElementById("basicInfo").innerHTML = `
-          <div class="flex items-center space-x-4">
-            <span class="text-4xl">${data.country.flag}</span>
-            <h1 class="text-2xl font-bold">${data.country.name}</h1>
-          </div>
-          <div class="mt-4">
-            <h2 class="text-xl text-blue-600 font-semibold">${
-              data.institution.name
-            }</h2>
-            ${
-              data.institution.department
-                ? `<p class="text-gray-600 mt-1">${data.institution.department}</p>`
-                : ""
-            }
+          <div class="relative">
+            <div class="absolute top-0 right-0 bg-blue-100 text-blue-800 px-3 py-1 rounded-bl-lg rounded-tr-lg text-sm font-medium">
+              ${data.project.name}
+            </div>
+            <div class="flex items-center space-x-4 pt-8">
+              <span class="text-4xl">${data.country.flag}</span>
+              <h1 class="text-2xl font-bold">${data.country.name}</h1>
+            </div>
+            <div class="mt-4">
+              <h2 class="text-xl text-blue-600 font-semibold">${
+                data.institution.name
+              }</h2>
+              ${
+                data.institution.department
+                  ? `<p class="text-gray-600 mt-1">${data.institution.department}</p>`
+                  : ""
+              }
+            </div>
           </div>
         `;
 
@@ -357,28 +362,34 @@
         `;
 
         // 更新資源區塊
+        // 更新 resourcesHTML 的部分
         const resourcesHTML = (data.resources || [])
           .sort((a, b) => a.order - b.order)
           .map(
             (resource) => `
-              <div class="border rounded-lg p-4 mb-4">
-                <h3 class="font-medium text-lg mb-2">${resource.title}</h3>
-                <div class="prose max-w-none">
-                  ${
-                    resource.type === "link"
-                      ? `<a href="${resource.url}" target="_blank" class="text-blue-600 hover:underline">${resource.content}</a>`
-                      : `<p class="whitespace-pre-wrap">${resource.content}</p>`
-                  }
-                </div>
-                ${
-                  resource.url && resource.type !== "link"
-                    ? `<div class="mt-2">
-                        <a href="${resource.url}" target="_blank" class="text-sm text-blue-600 hover:underline">相關連結</a>
-                       </div>`
-                    : ""
-                }
-              </div>
-            `
+    <div class="border rounded-lg p-4 mb-4">
+      <div class="flex justify-between items-center mb-2">
+        <h3 class="font-medium text-lg">${resource.title}</h3>
+        <span class="text-sm text-gray-500">
+          ${new Date(resource.createdAt).toLocaleString("zh-TW")}
+        </span>
+      </div>
+      <div class="prose max-w-none">
+        ${
+          resource.type === "link"
+            ? `<a href="${resource.url}" target="_blank" class="text-blue-600 hover:underline">${resource.content}</a>`
+            : `<p class="whitespace-pre-wrap">${resource.content}</p>`
+        }
+      </div>
+      ${
+        resource.url && resource.type !== "link"
+          ? `<div class="mt-2">
+              <a href="${resource.url}" target="_blank" class="text-sm text-blue-600 hover:underline">相關連結</a>
+             </div>`
+          : ""
+      }
+    </div>
+  `
           )
           .join("");
 

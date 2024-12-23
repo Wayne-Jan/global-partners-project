@@ -8,14 +8,65 @@
       href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
       rel="stylesheet"
     />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Arial", sans-serif;
+        background-color: #f5f5f5;
+        padding: 0;
+      }
+
+      .nav-container {
+        background-color: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 1rem;
+        margin-bottom: 20px;
+      }
+
+      .nav-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .nav-logo {
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: #2563eb;
+        text-decoration: none;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 1rem;
+      }
+
+      .nav-item {
+        color: #4b5563;
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        transition: all 0.2s;
+        cursor: pointer;
+      }
+
+      .nav-item:hover {
+        background-color: #f3f4f6;
+      }
+    </style>
   </head>
   <body class="bg-gray-50">
     <nav class="nav-container">
       <div class="nav-content">
         <a href="/" class="nav-logo">國際合作夥伴</a>
         <div class="nav-links" id="navLinks">
-          <a href="/register.html" class="nav-item" id="registerLink">註冊</a>
-          <a href="/login.html" class="nav-item" id="loginLink">登入</a>
           <a
             href="/dashboard.html"
             class="nav-item"
@@ -29,6 +80,7 @@
         </div>
       </div>
     </nav>
+
     <div class="min-h-screen flex items-center justify-center">
       <div class="bg-white p-8 rounded-lg shadow-lg w-96 space-y-6">
         <div class="text-center">
@@ -37,6 +89,7 @@
         </div>
 
         <form id="registerForm" class="space-y-4">
+          <!-- 表單內容保持不變 -->
           <div>
             <label
               for="username"
@@ -91,7 +144,7 @@
 
           <div class="text-center">
             <a
-              href="/index.html"
+              href="/login.html"
               class="text-sm text-blue-600 hover:text-blue-500"
             >
               已有帳號？點此登入

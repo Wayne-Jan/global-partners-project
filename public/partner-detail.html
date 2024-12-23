@@ -9,6 +9,67 @@
       rel="stylesheet"
     />
     <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Arial", sans-serif;
+        background-color: #f5f5f5;
+        padding: 0;
+      }
+
+      .nav-container {
+        background-color: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 1rem;
+        margin-bottom: 20px;
+      }
+
+      .nav-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .nav-logo {
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: #2563eb;
+        text-decoration: none;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 1rem;
+      }
+
+      .nav-item {
+        color: #4b5563;
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        transition: all 0.2s;
+        cursor: pointer;
+      }
+
+      .nav-item:hover {
+        background-color: #f3f4f6;
+      }
+
+      .nav-item.edit {
+        background-color: #2563eb;
+        color: white;
+      }
+
+      .nav-item.edit:hover {
+        background-color: #1d4ed8;
+      }
+
       .timeline-container {
         position: relative;
         padding-left: 32px;
@@ -39,17 +100,11 @@
   </head>
   <body class="bg-gray-50">
     <!-- 導覽列 -->
-    <nav class="bg-white shadow">
-      <div class="max-w-7xl mx-auto px-4">
-        <div class="flex justify-between h-16">
-          <div class="flex">
-            <a href="/" class="flex items-center text-blue-600 font-bold">
-              國際合作夥伴
-            </a>
-          </div>
-          <div class="flex items-center space-x-4" id="navButtons">
-            <!-- 權限按鈕將由 JavaScript 動態添加 -->
-          </div>
+    <nav class="nav-container">
+      <div class="nav-content">
+        <a href="/" class="nav-logo">國際合作夥伴</a>
+        <div class="nav-links" id="navButtons">
+          <!-- 權限按鈕將由 JavaScript 動態添加 -->
         </div>
       </div>
     </nav>

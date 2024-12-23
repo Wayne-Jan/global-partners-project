@@ -57,6 +57,15 @@
         background-color: #f3f4f6;
       }
 
+      .nav-item.add-partner {
+        background-color: #2563eb;
+        color: white;
+      }
+
+      .nav-item.add-partner:hover {
+        background-color: #1d4ed8;
+      }
+
       .container {
         max-width: 1200px;
         margin: 0 auto;
@@ -132,8 +141,16 @@
       <div class="nav-content">
         <a href="/" class="nav-logo">國際合作夥伴</a>
         <div class="nav-links" id="navLinks">
+          <a
+            href="/partner-management.html"
+            class="nav-item add-partner"
+            id="addPartnerLink"
+            style="display: none"
+            >新增合作夥伴</a
+          >
           <a href="/register.html" class="nav-item" id="registerLink">註冊</a>
           <a href="/login.html" class="nav-item" id="loginLink">登入</a>
+
           <a
             href="/dashboard.html"
             class="nav-item"
@@ -197,41 +214,71 @@
 
       // 檢查登入狀態
       function checkAuthStatus() {
-        const token = localStorage.getItem("token");
-        const user = JSON.parse(localStorage.getItem("user") || "{}");
-        const registerLink = document.getElementById("registerLink");
-        const loginLink = document.getElementById("loginLink");
-        const dashboardLink = document.getElementById("dashboardLink");
-        const logoutBtn = document.getElementById("logoutBtn");
+        try {
+          const token = localStorage.getItem("token");
+          const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-        if (token) {
-          registerLink.style.display = "none";
-          loginLink.style.display = "none";
-          if (user.role === "admin") {
-            dashboardLink.style.display = "inline-block";
+          // 使用 querySelector 並確保元素存在
+          const elements = {
+            registerLink: document.querySelector("#registerLink"),
+            loginLink: document.querySelector("#loginLink"),
+            dashboardLink: document.querySelector("#dashboardLink"),
+            logoutBtn: document.querySelector("#logoutBtn"),
+            addPartnerLink: document.querySelector("#addPartnerLink"),
+          };
+
+          // 檢查所有需要的元素是否都存在
+          if (!Object.values(elements).every((element) => element)) {
+            console.error("某些導航元素未找到");
+            return;
           }
-          logoutBtn.style.display = "inline-block";
-        } else {
-          registerLink.style.display = "inline-block";
-          loginLink.style.display = "inline-block";
-          dashboardLink.style.display = "none";
-          logoutBtn.style.display = "none";
+
+          if (token) {
+            elements.registerLink.style.display = "none";
+            elements.loginLink.style.display = "none";
+            if (user.role === "admin") {
+              elements.dashboardLink.style.display = "inline-block";
+              elements.addPartnerLink.style.display = "inline-block";
+            }
+            elements.logoutBtn.style.display = "inline-block";
+          } else {
+            elements.registerLink.style.display = "inline-block";
+            elements.loginLink.style.display = "inline-block";
+            elements.dashboardLink.style.display = "none";
+            elements.addPartnerLink.style.display = "none";
+            elements.logoutBtn.style.display = "none";
+          }
+        } catch (error) {
+          console.error("檢查登入狀態時發生錯誤:", error);
         }
       }
 
       // 登出功能
-      document.getElementById("logoutBtn")?.addEventListener("click", () => {
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        checkAuthStatus();
-        window.location.reload();
-      });
+      function setupLogoutButton() {
+        const logoutBtn = document.querySelector("#logoutBtn");
+        if (logoutBtn) {
+          logoutBtn.addEventListener("click", () => {
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            checkAuthStatus();
+            window.location.reload();
+          });
+        }
+      }
 
       // 初始化
-      document.addEventListener("DOMContentLoaded", () => {
+      function initializePage() {
         loadPartners();
         checkAuthStatus();
-      });
+        setupLogoutButton();
+      }
+
+      // 確保 DOM 完全加載後再執行
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initializePage);
+      } else {
+        initializePage();
+      }
     </script>
   </body>
 </html>

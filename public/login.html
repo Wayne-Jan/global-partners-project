@@ -8,19 +8,75 @@
       href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css"
       rel="stylesheet"
     />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Arial", sans-serif;
+        background-color: #f5f5f5;
+        padding: 0;
+      }
+
+      .nav-container {
+        background-color: white;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        padding: 1rem;
+        margin-bottom: 20px;
+      }
+
+      .nav-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .nav-logo {
+        font-size: 1.25rem;
+        font-weight: bold;
+        color: #2563eb;
+        text-decoration: none;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 1rem;
+      }
+
+      .nav-item {
+        color: #4b5563;
+        text-decoration: none;
+        padding: 0.5rem 1rem;
+        border-radius: 0.375rem;
+        transition: all 0.2s;
+        cursor: pointer;
+      }
+
+      .nav-item:hover {
+        background-color: #f3f4f6;
+      }
+    </style>
   </head>
   <body class="bg-gray-50">
-    <nav class="bg-white shadow-sm">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-          <div class="flex">
-            <a
-              href="/"
-              class="flex items-center text-blue-600 font-bold text-lg"
-            >
-              國際合作夥伴
-            </a>
-          </div>
+    <nav class="nav-container">
+      <div class="nav-content">
+        <a href="/" class="nav-logo">國際合作夥伴</a>
+        <div class="nav-links" id="navLinks">
+          <a
+            href="/dashboard.html"
+            class="nav-item"
+            id="dashboardLink"
+            style="display: none"
+            >儀表板</a
+          >
+          <button id="logoutBtn" class="nav-item" style="display: none">
+            登出
+          </button>
         </div>
       </div>
     </nav>
@@ -107,18 +163,12 @@
             const data = await response.json();
 
             if (response.ok) {
-              // 儲存用戶資訊和 token
               localStorage.setItem("token", data.token);
               localStorage.setItem("user", JSON.stringify(data.user));
 
-              console.log("Login successful:", data); // 用於除錯
-
-              // 根據用戶角色決定跳轉頁面
               if (data.user.role === "admin") {
-                // 管理員跳轉到 dashboard
                 window.location.href = "/dashboard.html";
               } else {
-                // 一般用戶跳轉到 partners 頁面
                 window.location.href = "/partners.html";
               }
             } else {
@@ -131,7 +181,7 @@
               );
             }
           } catch (error) {
-            console.error("Login error:", error); // 用於除錯
+            console.error("Login error:", error);
             errorMessage.textContent = "系統發生錯誤，請稍後再試";
             errorMessage.classList.remove("hidden");
             errorMessage.classList.add(
@@ -142,7 +192,6 @@
           }
         });
 
-      // 檢查是否從註冊頁面導向過來
       window.addEventListener("load", () => {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.get("registered") === "true") {
@@ -162,7 +211,6 @@
         }
       });
 
-      // 檢查是否已經登入，如果已登入則重定向
       window.addEventListener("load", () => {
         const token = localStorage.getItem("token");
         const user = JSON.parse(localStorage.getItem("user") || "{}");

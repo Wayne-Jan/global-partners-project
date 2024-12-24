@@ -589,7 +589,7 @@ router.put("/:id", auth, isAdmin, async (req, res) => {
       return res.status(404).json({ message: "找不到此合作夥伴" });
     }
 
-    console.log("接收到的更新合作夥伴資料:", req.body); // 日誌記錄
+    // console.log("接收到的更新合作夥伴資料:", req.body); // 日誌記錄
 
     // 處理資源更新時間
     if (req.body.resources) {

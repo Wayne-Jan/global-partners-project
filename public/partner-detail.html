@@ -604,35 +604,28 @@
   <!-- Body 部分 -->
   <body class="bg-gray-50">
     <!-- 導覽列 -->
-    <nav class="nav-container bg-white shadow">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-          <div class="flex">
-            <a href="/" class="flex-shrink-0 flex items-center">
-              <span class="font-bold text-xl">國際合作夥伴</span>
-            </a>
-          </div>
-          <div class="flex items-center">
-            <!-- 漢堡選單按鈕 -->
-            <button
-              class="hamburger md:hidden"
-              id="hamburger"
-              aria-label="導航選單"
-              aria-expanded="false"
-              aria-controls="navLinks"
-            >
-              <div class="line1"></div>
-              <div class="line2"></div>
-              <div class="line3"></div>
-            </button>
-            <!-- 導航連結 -->
-            <div class="nav-links" id="navLinks">
-              <div class="ml-4 flex items-center" id="navButtons">
-                <!-- 權限按鈕將由 JavaScript 動態添加 -->
-              </div>
-            </div>
+    <nav class="nav-container">
+      <div class="nav-content">
+        <a href="/" class="flex-shrink-0 flex items-center">
+          <span class="nav-logo">國際合作夥伴</span>
+        </a>
+        <div class="nav-links" id="navLinks">
+          <div class="ml-4 flex items-center" id="navButtons">
+            <!-- 權限按鈕將由 JavaScript 動態添加 -->
           </div>
         </div>
+        <!-- 漢堡選單按鈕 -->
+        <button
+          class="hamburger md:hidden"
+          id="hamburger"
+          aria-label="導航選單"
+          aria-expanded="false"
+          aria-controls="navLinks"
+        >
+          <div class="line1"></div>
+          <div class="line2"></div>
+          <div class="line3"></div>
+        </button>
       </div>
     </nav>
 
@@ -643,6 +636,10 @@
         <div class="p-6">
           <div id="basicInfo" class="mb-6">
             <!-- 基本資訊將由 JavaScript 動態填充 -->
+          </div>
+          <!-- 編輯按鈕，僅在有權限時顯示 -->
+          <div id="basicInfoEditButton" class="flex justify-end">
+            <!-- 編輯按鈕將由 JavaScript 動態添加 -->
           </div>
         </div>
       </div>
@@ -802,6 +799,112 @@
                 <button
                   type="button"
                   onclick="closeEditModal()"
+                  class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                >
+                  取消
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- 基本資訊編輯模態框（更新後） -->
+      <div
+        id="basicInfoModal"
+        class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50"
+      >
+        <div
+          class="relative top-10 mx-auto p-5 border w-full sm:w-96 shadow-lg rounded-md bg-white"
+        >
+          <div class="mt-3">
+            <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">
+              編輯基本資訊
+            </h3>
+            <form id="editBasicInfoForm">
+              <input type="hidden" id="basicInfoId" />
+              <div class="mb-4">
+                <label
+                  class="block text-gray-700 text-sm font-bold mb-2"
+                  for="basicInstitution"
+                  >機構名稱</label
+                >
+                <input
+                  type="text"
+                  id="basicInstitution"
+                  class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  required
+                />
+              </div>
+              <div class="mb-4">
+                <label
+                  class="block text-gray-700 text-sm font-bold mb-2"
+                  for="basicDepartment"
+                  >部門名稱</label
+                >
+                <input
+                  type="text"
+                  id="basicDepartment"
+                  class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                />
+              </div>
+              <div class="mb-4">
+                <label
+                  class="block text-gray-700 text-sm font-bold mb-2"
+                  for="basicProjectName"
+                  >主責子計畫</label
+                >
+                <select
+                  id="basicProjectName"
+                  class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  required
+                >
+                  <option value="">請選擇子計畫</option>
+                  <option value="子計畫三">子計畫三</option>
+                  <option value="子計畫四">子計畫四</option>
+                  <option value="子計畫五">子計畫五</option>
+                  <option value="子計畫六">子計畫六</option>
+                  <option value="子計畫七">子計畫七</option>
+                  <option value="子計畫八">子計畫八</option>
+                  <option value="子計畫九">子計畫九</option>
+                </select>
+              </div>
+              <div class="mb-4">
+                <label
+                  class="block text-gray-700 text-sm font-bold mb-2"
+                  for="basicProjectCustomName"
+                  >合作項目</label
+                >
+                <input
+                  type="text"
+                  id="basicProjectCustomName"
+                  class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  required
+                />
+              </div>
+              <div class="mb-4">
+                <label
+                  class="block text-gray-700 text-sm font-bold mb-2"
+                  for="basicProjectContent"
+                  >合作項目內容</label
+                >
+                <textarea
+                  id="basicProjectContent"
+                  class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                  rows="3"
+                  required
+                ></textarea>
+              </div>
+              <div class="flex items-center justify-between">
+                <button
+                  type="submit"
+                  class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+                >
+                  儲存
+                </button>
+                <button
+                  type="button"
+                  onclick="closeBasicInfoModal()"
                   class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
                 >
                   取消
@@ -1210,8 +1313,8 @@
               <div class="space-y-6">
                 <!-- 合作項目 -->
                 <div class="bg-gray-50 rounded-lg p-4">
-                  <h3 class="text-sm font-medium text-gray-700 uppercase tracking-wider mb-2">合作項目</h3>
-                  <p class="text-gray-600 text-sm">${
+                  <h3 class="text-base font-medium text-gray-700 uppercase tracking-wider mb-2">合作項目</h3>
+                  <p class="text-gray-600 text-base">${
                     data.project.name || "尚未設定"
                   }</p>
                 </div>
@@ -1220,9 +1323,9 @@
                   data.project.content
                     ? `
                   <div class="bg-gray-50 rounded-lg p-4">
-                    <h3 class="text-sm font-medium text-gray-700 uppercase tracking-wider mb-2">合作項目內容</h3>
+                    <h3 class="text-base font-medium text-gray-700 uppercase tracking-wider mb-2">合作項目內容</h3>
                     <div class="prose max-w-none">
-                      <p class="text-gray-600 text-sm leading-relaxed whitespace-pre-line">${data.project.content}</p>
+                      <p class="text-gray-600 text-base leading-relaxed whitespace-pre-line">${data.project.content}</p>
                     </div>
                   </div>
                   `
@@ -1234,6 +1337,27 @@
         `;
 
         const hasPermission = checkUserPermission();
+
+        // 更新編輯按鈕
+        const basicInfoEditButton = document.getElementById(
+          "basicInfoEditButton"
+        );
+        if (hasPermission) {
+          basicInfoEditButton.innerHTML = `
+            <button
+              onclick="editBasicInfo()"
+              class="px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-700 flex items-center"
+              title="編輯基本資訊"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+              </svg>
+              編輯
+            </button>
+          `;
+        } else {
+          basicInfoEditButton.innerHTML = "";
+        }
 
         // 更新時間軸
         const sortedTimeline = (data.timeline || []).sort((a, b) => {
@@ -2031,6 +2155,96 @@
       function closeDetailModal() {
         const detailModal = document.getElementById("detailModal");
         detailModal.classList.add("hidden");
+      }
+
+      // 基本資訊編輯相關函數（更新後）
+      function editBasicInfo() {
+        if (!checkUserPermission()) {
+          alert("您沒有權限執行此操作");
+          return;
+        }
+
+        const modal = document.getElementById("basicInfoModal");
+        const form = document.getElementById("editBasicInfoForm");
+
+        // 填充現有資料
+        document.getElementById("basicInstitution").value =
+          window.partnerData.institution.name || "";
+        document.getElementById("basicDepartment").value =
+          window.partnerData.institution.department || "";
+        document.getElementById("basicProjectName").value =
+          window.partnerData.project.subProject || "";
+        document.getElementById("basicProjectCustomName").value =
+          window.partnerData.project.name || "";
+        document.getElementById("basicProjectContent").value =
+          window.partnerData.project.content || "";
+
+        modal.classList.remove("hidden");
+
+        form.onsubmit = async (e) => {
+          e.preventDefault();
+          await updateBasicInfo();
+        };
+      }
+
+      function closeBasicInfoModal() {
+        const modal = document.getElementById("basicInfoModal");
+        modal.classList.add("hidden");
+      }
+
+      async function updateBasicInfo() {
+        if (!checkUserPermission()) {
+          alert("您沒有權限執行此操作");
+          return;
+        }
+
+        const partnerId = window.partnerData._id;
+        const token = localStorage.getItem("token");
+
+        const updatedBasicInfo = {
+          // 保留原有的國家資訊
+          country: window.partnerData.country,
+          institution: {
+            name: document.getElementById("basicInstitution").value.trim(),
+            department: document.getElementById("basicDepartment").value.trim(),
+          },
+          project: {
+            subProject: document.getElementById("basicProjectName").value,
+            name: document
+              .getElementById("basicProjectCustomName")
+              .value.trim(),
+            content: document
+              .getElementById("basicProjectContent")
+              .value.trim(),
+          },
+          // 加入 progress 資訊
+          progress: window.partnerData.progress, // 保留原有的進度資訊
+        };
+
+        try {
+          const response = await fetch(`/api/partners/${partnerId}`, {
+            method: "PUT",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(updatedBasicInfo),
+          });
+
+          if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(
+              errorData.message || `HTTP error! status: ${response.status}`
+            );
+          }
+
+          closeBasicInfoModal();
+          await loadPartnerData();
+          alert("基本資訊已成功更新！");
+        } catch (error) {
+          console.error("Error updating basic info:", error);
+          alert("更新基本資訊時發生錯誤：" + error.message);
+        }
       }
 
       // 漢堡選單功能

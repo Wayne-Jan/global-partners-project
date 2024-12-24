@@ -9,6 +9,24 @@
       rel="stylesheet"
     />
     <style>
+      /* ---- 漸層背景與固定圖案（同前述示例） ---- */
+      body {
+        background: linear-gradient(135deg, #f6f8fc 0%, #e9eef6 100%);
+        background-attachment: fixed;
+        position: relative;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        pointer-events: none;
+        z-index: 0;
+      }
+
       /* 基本樣式重置 */
       * {
         margin: 0;
@@ -16,21 +34,24 @@
         box-sizing: border-box;
       }
 
+      /* 主要字型、背景顏色（此處 background 屬性已覆蓋，僅做冗餘設定） */
       body {
         font-family: "Arial", sans-serif;
         background-color: #f5f5f5;
         padding: 0;
       }
 
-      /* 導覽列樣式 */
+      /* 導覽列樣式（已移除漢堡選單與「編輯資料」按鈕） */
       .nav-container {
-        background-color: white;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        background-color: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
+          0 2px 4px -1px rgba(0, 0, 0, 0.03);
         padding: 1rem;
         margin-bottom: 20px;
         position: relative;
       }
-
       .nav-content {
         max-width: 1200px;
         margin: 0 auto;
@@ -38,19 +59,16 @@
         justify-content: space-between;
         align-items: center;
       }
-
       .nav-logo {
         font-size: 1.25rem;
         font-weight: bold;
         color: #2563eb;
         text-decoration: none;
       }
-
       .nav-links {
         display: flex;
         gap: 1rem;
       }
-
       .nav-item {
         color: #4b5563;
         text-decoration: none;
@@ -59,18 +77,8 @@
         transition: all 0.2s;
         cursor: pointer;
       }
-
       .nav-item:hover {
         background-color: #f3f4f6;
-      }
-
-      .nav-item.edit {
-        background-color: #2563eb;
-        color: white;
-      }
-
-      .nav-item.edit:hover {
-        background-color: #1d4ed8;
       }
 
       /* 時間軸樣式 */
@@ -81,7 +89,6 @@
         padding-top: 12px; /* 增加頂部間距 */
         overflow-x: hidden; /* 防止橫向捲動 */
       }
-
       .timeline-line {
         position: absolute;
         left: 15px;
@@ -90,7 +97,6 @@
         width: 2px;
         background-color: #e5e7eb;
       }
-
       .timeline-dot {
         position: absolute;
         left: 11px;
@@ -102,49 +108,41 @@
         box-shadow: 0 0 0 2px #3b82f6; /* 預設藍色陰影 */
         z-index: 1;
       }
-
       /* 不同類型的時間軸點點顏色 */
       .timeline-dot.create {
         background-color: #10b981; /* 綠色 */
         box-shadow: 0 0 0 2px #10b981;
       }
-
       .timeline-dot.update {
         background-color: #3b82f6; /* 藍色 */
         box-shadow: 0 0 0 2px #3b82f6;
       }
-
       .timeline-dot.delete {
         background-color: #ef4444; /* 紅色 */
         box-shadow: 0 0 0 2px #ef4444;
       }
-
       .timeline-dot.contact {
         background-color: #8b5cf6; /* 紫色 */
         box-shadow: 0 0 0 2px #8b5cf6;
       }
-
       .timeline-dot.phase {
         background-color: #f59e0b; /* 橙色 */
         box-shadow: 0 0 0 2px #f59e0b;
       }
-
       .timeline-item {
         position: relative;
         margin-bottom: 24px;
         padding-bottom: 24px;
         border-bottom: 1px solid #e5e7eb;
         transition: all 0.3s ease;
-        cursor: pointer; /* 確保 cursor 為指針 */
+        cursor: pointer;
       }
-
       .timeline-item:hover {
         background-color: #f8fafc;
         border-radius: 8px;
         padding: 12px;
         margin-left: -12px;
       }
-
       .timeline-content {
         background-color: #ffffff; /* 白色背景 */
         border-left: 4px solid transparent; /* 初始為透明 */
@@ -154,34 +152,27 @@
         padding: 16px;
         border-radius: 8px;
       }
-
       /* 根據類型調整左側邊框顏色 */
       .timeline-item.create .timeline-content {
         border-color: #10b981; /* 綠色 */
       }
-
       .timeline-item.update .timeline-content {
         border-color: #3b82f6; /* 藍色 */
       }
-
       .timeline-item.delete .timeline-content {
         border-color: #ef4444; /* 紅色 */
       }
-
       .timeline-item.contact .timeline-content {
         border-color: #8b5cf6; /* 紫色 */
       }
-
       .timeline-item.phase .timeline-content {
         border-color: #f59e0b; /* 橙色 */
       }
-
       .timeline-date {
         color: #6b7280;
         font-size: 0.875rem;
         margin-bottom: 4px;
       }
-
       .timeline-title {
         font-weight: 600;
         color: #1f2937;
@@ -190,13 +181,11 @@
         align-items: center;
         justify-content: space-between;
       }
-
       .timeline-description {
         color: #4b5563;
         font-size: 0.875rem;
         line-height: 1.5;
       }
-
       .timeline-badge {
         display: inline-block;
         padding: 2px 8px;
@@ -204,43 +193,37 @@
         font-size: 0.75rem;
         font-weight: 500;
         margin-left: 8px;
-        color: white; /* 確保文字為白色 */
+        color: white;
       }
-
       /* 不同類型的徽章顏色 */
       .badge-update {
         background-color: #3b82f6; /* 藍色 */
       }
-
       .badge-create {
         background-color: #10b981; /* 綠色 */
       }
-
       .badge-delete {
         background-color: #ef4444; /* 紅色 */
       }
-
       .badge-contact {
         background-color: #8b5cf6; /* 紫色 */
       }
-
       .badge-phase {
         background-color: #f59e0b; /* 橙色 */
       }
-
       .timeline-item:last-child {
         border-bottom: none;
         margin-bottom: 0;
         padding-bottom: 0;
       }
 
+      /* 加號按鈕與標籤提示 */
       .add-button-container {
         position: relative;
         text-align: center;
         margin: 1rem 0;
         padding: 1rem 0;
       }
-
       .add-button-container::before {
         content: "";
         position: absolute;
@@ -251,42 +234,37 @@
         background-color: #e5e7eb;
         z-index: 1;
       }
-
       .add-button {
         position: relative;
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 40px; /* 增大按鈕尺寸以提升可視性 */
+        width: 40px;
         height: 40px;
         margin: 0 auto;
-        background-color: #e5e7eb; /* Tailwind CSS 的灰色 300 */
-        border: 1px solid #e5e7eb; /* Tailwind CSS 的灰色 400 */
+        background-color: #e5e7eb;
+        border: 1px solid #e5e7eb;
         border-radius: 50%;
         cursor: pointer;
         transition: all 0.3s ease;
         z-index: 2;
       }
-
       .add-button:hover {
-        background-color: #2563eb; /* Tailwind CSS 的藍色 600 */
+        background-color: #2563eb;
         border-color: #2563eb;
         transform: scale(1.1);
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
           0 2px 4px -1px rgba(0, 0, 0, 0.06);
       }
-
       .add-button svg {
-        width: 20px; /* 增大加號圖示尺寸 */
+        width: 20px;
         height: 20px;
-        fill: #e7e7e7; /* Tailwind CSS 的灰色 700 */
+        fill: #e7e7e7;
         transition: fill 0.3s ease;
       }
-
       .add-button:hover svg {
         fill: white;
       }
-
       .add-button-label {
         position: absolute;
         left: 50%;
@@ -298,7 +276,6 @@
         opacity: 0;
         transition: opacity 0.3s ease;
       }
-
       .add-button:hover + .add-button-label {
         opacity: 1;
       }
@@ -310,13 +287,11 @@
         width: 50px;
         height: 24px;
       }
-
       .toggle-switch input {
         opacity: 0;
         width: 0;
         height: 0;
       }
-
       .slider {
         position: absolute;
         cursor: pointer;
@@ -328,7 +303,6 @@
         transition: 0.4s;
         border-radius: 34px;
       }
-
       .slider:before {
         position: absolute;
         content: "";
@@ -340,154 +314,27 @@
         transition: 0.4s;
         border-radius: 50%;
       }
-
       input:checked + .slider {
         background-color: #2563eb;
       }
-
       input:checked + .slider:before {
         transform: translateX(26px);
-      }
-
-      /* 確保按鈕不觸發父元素的點擊事件 */
-      .timeline-item button {
-        cursor: pointer;
-      }
-
-      /* 新增的CSS */
-      .prose {
-        line-height: 1.75;
-      }
-
-      .prose p {
-        margin-bottom: 1em;
-      }
-
-      /* 漸變背景效果 */
-      .bg-gradient {
-        background: linear-gradient(to right, #f8fafc, #f1f5f9);
       }
 
       /* 卡片懸浮效果 */
       .shadow-sm {
         transition: all 0.3s ease;
       }
-
       .shadow-sm:hover {
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       }
 
-      /* 移除基本資訊的懸停效果 */
+      /* 基本資訊卡片 hover 效果調整為無特殊變化 */
       #basicInfoCard:hover {
-        /* 無任何效果 */
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
       }
 
-      /* 漢堡選單按鈕樣式 */
-      .hamburger {
-        display: none;
-        width: 32px;
-        height: 32px;
-        position: relative;
-        cursor: pointer;
-        background: transparent;
-        border: none;
-        padding: 0;
-        border-radius: 4px;
-        transition: background-color 0.3s;
-      }
-
-      .hamburger:hover {
-        background-color: rgba(37, 99, 235, 0.1);
-      }
-
-      .hamburger div {
-        position: absolute;
-        width: 18px;
-        height: 2px;
-        background-color: #2563eb;
-        left: 7px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      }
-
-      .hamburger .line1 {
-        top: 11px;
-      }
-
-      .hamburger .line2 {
-        top: 15px;
-      }
-
-      .hamburger .line3 {
-        top: 19px;
-      }
-
-      /* 漢堡選單開啟時的動畫效果 */
-      .hamburger.active .line1 {
-        transform: translateY(4px) rotate(45deg);
-        background-color: #2563eb;
-      }
-
-      .hamburger.active .line2 {
-        opacity: 0;
-      }
-
-      .hamburger.active .line3 {
-        transform: translateY(-4px) rotate(-45deg);
-        background-color: #2563eb;
-      }
-
-      /* 導覽列下拉選單樣式 */
-      @media (max-width: 768px) {
-        .nav-links {
-          display: none;
-          flex-direction: column;
-          background-color: white;
-          position: absolute;
-          top: 100%;
-          left: 0;
-          width: 100%;
-          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-          max-height: 0;
-          overflow: hidden;
-          transition: max-height 0.3s ease-in-out,
-            opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
-            transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          z-index: 1000;
-          opacity: 0;
-          visibility: hidden;
-          transform: translateY(-10px);
-        }
-
-        .nav-links.show {
-          display: flex;
-          max-height: 500px;
-          opacity: 1;
-          visibility: visible;
-          transform: translateY(0);
-        }
-
-        .nav-item {
-          display: block;
-          width: 100%;
-          padding: 0.75rem 1rem;
-          margin: 0.25rem 0;
-          border-radius: 6px;
-          color: #4b5563;
-          font-weight: 500;
-          transition: all 0.2s;
-          text-align: left;
-        }
-
-        .nav-item:hover {
-          background-color: rgba(37, 99, 235, 0.1);
-          color: #2563eb;
-        }
-
-        .hamburger {
-          display: block;
-        }
-      }
+      /* 移除 .hamburger 相關樣式（已刪除漢堡選單） */
 
       /* 階段標籤的基本樣式 */
       .phase-badge {
@@ -499,48 +346,55 @@
         font-weight: 500;
         border: 1px solid;
       }
-
       /* 各個階段的顏色樣式 */
       .phase-initial {
         background-color: #f3e8ff; /* 淺紫色背景 */
         color: #7c3aed; /* 深紫色文字 */
         border-color: #ddd6fe;
       }
-
       .phase-confirm {
         background-color: #dbeafe; /* 淺藍色背景 */
         color: #2563eb; /* 深藍色文字 */
         border-color: #bfdbfe;
       }
-
       .phase-survey {
         background-color: #fef9c3; /* 淺黃色背景 */
         color: #d97706; /* 深黃色文字 */
         border-color: #fde68a;
       }
-
       .phase-deploy {
         background-color: #ffedd5; /* 淺橙色背景 */
         color: #ea580c; /* 深橙色文字 */
         border-color: #fed7aa;
       }
-
       .phase-collect {
         background-color: #dcfce7; /* 淺綠色背景 */
         color: #16a34a; /* 深綠色文字 */
         border-color: #bbf7d0;
       }
-
       .phase-analyze {
         background-color: #ede9fe; /* 淺靛藍色背景 */
         color: #6d28d9; /* 深靛藍色文字 */
         border-color: #ddd6fe;
       }
-
       .phase-complete {
         background-color: #f3f4f6; /* 淺灰色背景 */
         color: #4b5563; /* 深灰色文字 */
         border-color: #e5e7eb;
+      }
+
+      /* 編輯按鈕樣式 */
+      .basic-info-edit-button {
+        margin-left: 0.5rem;
+        color: #3b82f6;
+        transition: color 0.3s ease;
+      }
+      .basic-info-edit-button:hover {
+        color: #1d4ed8;
+      }
+      .basic-info-edit-button svg {
+        width: 20px;
+        height: 20px;
       }
 
       /* 調整卡片和內容的最大寬度以適應小屏幕 */
@@ -548,60 +402,53 @@
         .timeline-container {
           padding-left: 16px;
         }
-
         .timeline-dot {
           left: 8px;
         }
-
         .timeline-line {
           left: 12px;
         }
-
         .timeline-content {
           margin-left: 8px;
           padding: 12px;
         }
-
         .add-button {
           width: 36px;
           height: 36px;
         }
-
         .add-button svg {
           width: 18px;
           height: 18px;
         }
-
-        /* 調整基本資訊卡片的內部排版 */
         #basicInfo {
           display: flex;
           flex-direction: column;
           gap: 1rem;
         }
-
-        /* 調整聯絡人資訊區塊 */
         #contactsContainer {
           grid-template-columns: 1fr;
         }
-      }
-
-      /* 調整時間軸內容在小屏幕上的顯示 */
-      @media (max-width: 640px) {
         .timeline-content {
           padding: 12px;
         }
-      }
-
-      /* 調整資源區塊內容在小屏幕上的顯示 */
-      @media (max-width: 640px) {
         .resources-content {
           padding: 12px;
         }
       }
+
+      /* 新增的CSS：使文字更具閱讀性 */
+      .prose {
+        line-height: 1.75;
+      }
+      .prose p {
+        margin-bottom: 1em;
+      }
+      .bg-gradient {
+        background: linear-gradient(to right, #f8fafc, #f1f5f9);
+      }
     </style>
   </head>
 
-  <!-- Body 部分 -->
   <body class="bg-gray-50">
     <!-- 導覽列 -->
     <nav class="nav-container">
@@ -609,23 +456,15 @@
         <a href="/" class="flex-shrink-0 flex items-center">
           <span class="nav-logo">國際合作夥伴</span>
         </a>
+        <!-- 保留的連結：返回列表 -->
         <div class="nav-links" id="navLinks">
-          <div class="ml-4 flex items-center" id="navButtons">
-            <!-- 權限按鈕將由 JavaScript 動態添加 -->
-          </div>
+          <a
+            href="/partners.html"
+            class="nav-item px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200"
+          >
+            返回列表
+          </a>
         </div>
-        <!-- 漢堡選單按鈕 -->
-        <button
-          class="hamburger md:hidden"
-          id="hamburger"
-          aria-label="導航選單"
-          aria-expanded="false"
-          aria-controls="navLinks"
-        >
-          <div class="line1"></div>
-          <div class="line2"></div>
-          <div class="line3"></div>
-        </button>
       </div>
     </nav>
 
@@ -636,10 +475,6 @@
         <div class="p-6">
           <div id="basicInfo" class="mb-6">
             <!-- 基本資訊將由 JavaScript 動態填充 -->
-          </div>
-          <!-- 編輯按鈕，僅在有權限時顯示 -->
-          <div id="basicInfoEditButton" class="flex justify-end">
-            <!-- 編輯按鈕將由 JavaScript 動態添加 -->
           </div>
         </div>
       </div>
@@ -669,9 +504,7 @@
             id="timelineContainer"
             class="timeline-container relative overflow-x-hidden"
           >
-            <div
-              class="timeline-line absolute left-4 top-0 bottom-0 w-1 bg-gray-300"
-            ></div>
+            <div class="timeline-line"></div>
             <!-- 時間軸項目將由 JavaScript 動態填充 -->
           </div>
           <!-- 新增時間軸項目按鈕 -->
@@ -686,7 +519,7 @@
           </div>
         </div>
 
-        <!-- 相關資料 (替換原本的場地資訊) -->
+        <!-- 相關資料 -->
         <div class="bg-white rounded-lg shadow p-6">
           <h2 class="text-xl font-semibold mb-4">相關資料</h2>
           <div id="resourcesContainer" class="space-y-4">
@@ -747,8 +580,9 @@
                 <label
                   class="block text-gray-700 text-sm font-bold mb-2"
                   for="phase"
-                  >執行階段</label
                 >
+                  執行階段
+                </label>
                 <select
                   id="phase"
                   class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -767,8 +601,9 @@
                 <label
                   class="block text-gray-700 text-sm font-bold mb-2"
                   for="date"
-                  >日期時間</label
                 >
+                  日期時間
+                </label>
                 <input
                   type="datetime-local"
                   id="date"
@@ -780,8 +615,9 @@
                 <label
                   class="block text-gray-700 text-sm font-bold mb-2"
                   for="description"
-                  >描述</label
                 >
+                  描述
+                </label>
                 <textarea
                   id="description"
                   class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -809,7 +645,7 @@
         </div>
       </div>
 
-      <!-- 基本資訊編輯模態框（更新後） -->
+      <!-- 基本資訊編輯模態框 -->
       <div
         id="basicInfoModal"
         class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50"
@@ -827,8 +663,9 @@
                 <label
                   class="block text-gray-700 text-sm font-bold mb-2"
                   for="basicInstitution"
-                  >機構名稱</label
                 >
+                  機構名稱
+                </label>
                 <input
                   type="text"
                   id="basicInstitution"
@@ -840,8 +677,9 @@
                 <label
                   class="block text-gray-700 text-sm font-bold mb-2"
                   for="basicDepartment"
-                  >部門名稱</label
                 >
+                  部門名稱
+                </label>
                 <input
                   type="text"
                   id="basicDepartment"
@@ -852,8 +690,9 @@
                 <label
                   class="block text-gray-700 text-sm font-bold mb-2"
                   for="basicProjectName"
-                  >主責子計畫</label
                 >
+                  主責子計畫
+                </label>
                 <select
                   id="basicProjectName"
                   class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -873,8 +712,9 @@
                 <label
                   class="block text-gray-700 text-sm font-bold mb-2"
                   for="basicProjectCustomName"
-                  >合作項目</label
                 >
+                  合作項目
+                </label>
                 <input
                   type="text"
                   id="basicProjectCustomName"
@@ -886,8 +726,9 @@
                 <label
                   class="block text-gray-700 text-sm font-bold mb-2"
                   for="basicProjectContent"
-                  >合作項目內容</label
                 >
+                  合作項目內容
+                </label>
                 <textarea
                   id="basicProjectContent"
                   class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -933,8 +774,9 @@
                 <label
                   class="block text-gray-700 text-sm font-bold mb-2"
                   for="resourceTitle"
-                  >標題</label
                 >
+                  標題
+                </label>
                 <input
                   type="text"
                   id="resourceTitle"
@@ -946,8 +788,9 @@
                 <label
                   class="block text-gray-700 text-sm font-bold mb-2"
                   for="resourceType"
-                  >類型</label
                 >
+                  類型
+                </label>
                 <select
                   id="resourceType"
                   class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -961,8 +804,9 @@
                 <label
                   class="block text-gray-700 text-sm font-bold mb-2"
                   for="resourceContent"
-                  >內容</label
                 >
+                  內容
+                </label>
                 <textarea
                   id="resourceContent"
                   class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
@@ -974,8 +818,9 @@
                 <label
                   class="block text-gray-700 text-sm font-bold mb-2"
                   for="resourceUrl"
-                  >相關連結（選填）</label
                 >
+                  相關連結（選填）
+                </label>
                 <input
                   type="url"
                   id="resourceUrl"
@@ -1020,8 +865,9 @@
                 <label
                   class="block text-gray-700 text-sm font-bold mb-2"
                   for="contactName"
-                  >姓名</label
                 >
+                  姓名
+                </label>
                 <input
                   type="text"
                   id="contactName"
@@ -1033,8 +879,9 @@
                 <label
                   class="block text-gray-700 text-sm font-bold mb-2"
                   for="contactTitle"
-                  >職稱</label
                 >
+                  職稱
+                </label>
                 <input
                   type="text"
                   id="contactTitle"
@@ -1046,8 +893,9 @@
                 <label
                   class="block text-gray-700 text-sm font-bold mb-2"
                   for="contactEmail"
-                  >Email</label
                 >
+                  Email
+                </label>
                 <input
                   type="email"
                   id="contactEmail"
@@ -1059,8 +907,9 @@
                 <label
                   class="block text-gray-700 text-sm font-bold mb-2"
                   for="contactPhone"
-                  >電話（選填）</label
                 >
+                  電話（選填）
+                </label>
                 <input
                   type="tel"
                   id="contactPhone"
@@ -1117,13 +966,13 @@
     </div>
 
     <script>
-      // 在頂部定義全域變數
+      /* 
+        以下 script 與原本邏輯基本相同，只移除
+        「編輯資料」的檢查與渲染，並移除漢堡選單相關程式。
+      */
       let isReverseOrder = true; // 預設為倒序排列
-
-      // 設置時區常量
       const TIME_ZONE = "Asia/Taipei";
 
-      // 格式化日期為指定時區的本地字符串
       function formatDateToLocaleString(date) {
         return new Intl.DateTimeFormat("zh-TW", {
           timeZone: TIME_ZONE,
@@ -1135,8 +984,6 @@
           second: "2-digit",
         }).format(date);
       }
-
-      // 格式化日期為 datetime-local 所需的格式，指定時區
       function formatDateToInputValue(date) {
         const options = {
           timeZone: TIME_ZONE,
@@ -1147,7 +994,7 @@
           minute: "2-digit",
           hour12: false,
         };
-        const formatter = new Intl.DateTimeFormat("en-CA", options); // en-CA 格式為 YYYY-MM-DD
+        const formatter = new Intl.DateTimeFormat("en-CA", options);
         const parts = formatter.formatToParts(date);
         const dateParts = {};
         parts.forEach(({ type, value }) => {
@@ -1155,13 +1002,9 @@
         });
         return `${dateParts.year}-${dateParts.month}-${dateParts.day}T${dateParts.hour}:${dateParts.minute}`;
       }
-
-      // 獲取當前台灣時間
       function getCurrentTaiwanTime() {
         return new Date().toLocaleString("en-US", { timeZone: TIME_ZONE });
       }
-
-      // 修改顯示日期的函數，使用台灣時間
       function formatDisplayDate(dateString) {
         const date = new Date(dateString);
         const options = {
@@ -1175,57 +1018,31 @@
         return new Intl.DateTimeFormat("zh-TW", options).format(date);
       }
 
-      // 檢查用戶權限
+      // 假設只保留「返回列表」，故不再顯示「編輯資料」按鈕
       function checkPermissions() {
-        const user = JSON.parse(localStorage.getItem("user") || "{}");
-        const navButtons = document.getElementById("navButtons");
-
-        let navHTML = `
-            <a href="/partners.html" class="px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-200">
-              返回列表
-            </a>
-          `;
-
-        const hasPermission = checkUserPermission();
-
-        if (hasPermission && window.partnerData?._id) {
-          navHTML += `
-              <a href="/partner-management.html?id=${window.partnerData._id}"
-                 class="ml-4 px-3 py-2 rounded-md text-sm font-medium text-white bg-blue-500 hover:bg-blue-700">
-                編輯資料
-              </a>
-            `;
-        }
-
-        navButtons.innerHTML = navHTML;
+        // 僅保留「返回列表」，不做更多動態 UI 更新
       }
 
-      // 統一的權限檢查函數
       function checkUserPermission() {
+        // 若仍需限制新增/編輯權限，可在此改寫
         const user = JSON.parse(localStorage.getItem("user") || "{}");
         const currentCountryCode = window.partnerData?.country?.code;
-
         if (user.role === "admin") {
           return true;
         }
-
         if (!Array.isArray(user.assignedCountries)) {
           return false;
         }
-
         return user.assignedCountries.includes(currentCountryCode);
       }
 
-      // 載入合作夥伴資料
       async function loadPartnerData() {
         const urlParams = new URLSearchParams(window.location.search);
         const partnerId = urlParams.get("id");
-
         if (!partnerId) {
           window.location.href = "/partners.html";
           return;
         }
-
         try {
           const token = localStorage.getItem("token");
           const response = await fetch(`/api/partners/${partnerId}`, {
@@ -1233,11 +1050,9 @@
               Authorization: `Bearer ${token}`,
             },
           });
-
           if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
           }
-
           const data = await response.json();
           window.partnerData = data;
           updateUI(data);
@@ -1248,20 +1063,17 @@
         }
       }
 
-      // 更新 UI
       function updateUI(data) {
-        // 從時間軸中獲取最新階段
         const latestPhase = getLatestPhase(data.timeline);
-
-        // 更新 data.progress 物件
         data.progress = {
           ...data.progress,
           phase: latestPhase.phase,
           lastUpdate: latestPhase.date,
           details: latestPhase.description,
         };
+        const hasPermission = checkUserPermission();
 
-        // 更新基本資訊
+        // 基本資訊
         document.getElementById("basicInfo").innerHTML = `
           <div class="relative bg-white rounded-lg p-6">
             <!-- 頂部資訊列 -->
@@ -1272,18 +1084,18 @@
                 </span>
                 <div class="flex items-center">
                   <span class="${getPhaseColor(data.progress.phase)}">
-                      ${data.progress.phase}
+                    ${data.progress.phase}
                   </span>
                 </div>
               </div>
               <div class="flex items-center text-gray-500 text-sm">
                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
                 ${formatDisplayDate(data.updatedAt || data.createdAt)}
               </div>
             </div>
-      
             <!-- 主要內容 -->
             <div class="space-y-6">
               <!-- 國家資訊 -->
@@ -1296,7 +1108,6 @@
                   <p class="text-gray-500 text-sm">${data.country.code}</p>
                 </div>
               </div>
-      
               <!-- 機構資訊 -->
               <div class="border-l-4 border-blue-500 pl-4">
                 <h2 class="text-xl text-blue-600 font-semibold">
@@ -1308,26 +1119,27 @@
                     : ""
                 }
               </div>
-      
               <!-- 合作項目資訊 -->
               <div class="space-y-6">
-                <!-- 合作項目 -->
                 <div class="bg-gray-50 rounded-lg p-4">
                   <h3 class="text-base font-medium text-gray-700 uppercase tracking-wider mb-2">合作項目</h3>
                   <p class="text-gray-600 text-base">${
                     data.project.name || "尚未設定"
                   }</p>
                 </div>
-                <!-- 合作項目內容 -->
                 ${
                   data.project.content
                     ? `
-                  <div class="bg-gray-50 rounded-lg p-4">
-                    <h3 class="text-base font-medium text-gray-700 uppercase tracking-wider mb-2">合作項目內容</h3>
-                    <div class="prose max-w-none">
-                      <p class="text-gray-600 text-base leading-relaxed whitespace-pre-line">${data.project.content}</p>
+                    <div class="bg-gray-50 rounded-lg p-4">
+                      <h3 class="text-base font-medium text-gray-700 uppercase tracking-wider mb-2">
+                        合作項目內容
+                      </h3>
+                      <div class="prose max-w-none">
+                        <p class="text-gray-600 text-base leading-relaxed whitespace-pre-line">
+                          ${data.project.content}
+                        </p>
+                      </div>
                     </div>
-                  </div>
                   `
                     : ""
                 }
@@ -1336,138 +1148,60 @@
           </div>
         `;
 
-        const hasPermission = checkUserPermission();
-
-        // 更新編輯按鈕
-        const basicInfoEditButton = document.getElementById(
-          "basicInfoEditButton"
-        );
-        if (hasPermission) {
-          basicInfoEditButton.innerHTML = `
-            <button
-              onclick="editBasicInfo()"
-              class="px-3 py-2 bg-blue-500 text-white rounded-md hover:bg-blue-700 flex items-center"
-              title="編輯基本資訊"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-              </svg>
-              編輯
-            </button>
-          `;
-        } else {
-          basicInfoEditButton.innerHTML = "";
-        }
-
-        // 更新時間軸
+        // 時間軸
         const sortedTimeline = (data.timeline || []).sort((a, b) => {
           return isReverseOrder
-            ? new Date(b.date) - new Date(a.date) // 新到舊
-            : new Date(a.date) - new Date(b.date); // 舊到新
+            ? new Date(b.date) - new Date(a.date)
+            : new Date(a.date) - new Date(b.date);
         });
-
         const timelineHTML = sortedTimeline
           .map(
             (item) => `
-                <div class="timeline-item ${
-                  item.type || "update"
-                } flex relative" onclick="showDetail('${item._id}')">
-                  <div class="flex flex-col items-center">
-                    <div class="timeline-dot ${item.type || "update"}"></div>
-                  </div>
-                  <div class="timeline-content ml-6 p-4 bg-gray-100 rounded-lg w-full">
-                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
-                      <span class="font-medium">${item.phase}</span>
-                      <div class="flex items-center space-x-2 mt-2 sm:mt-0">
-                        <span class="timeline-badge badge-${
-                          item.type || "update"
-                        }">${getTimelineBadgeText(item.type)}</span>
-                        ${
-                          hasPermission
-                            ? `
-                              <button
-                                onclick="editTimelineEvent(event, '${
-                                  item._id
-                                }', ${JSON.stringify(item).replace(
-                                /"/g,
-                                "&quot;"
-                              )})"
-                                class="text-blue-600 hover:text-blue-800 text-sm"
-                                title="編輯"
-                              >
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                </svg>
-                              </button>
-                              <button
-                                onclick="deleteTimelineEvent(event, '${
-                                  item._id
-                                }')"
-                                class="text-red-600 hover:text-red-800 text-sm"
-                                title="刪除"
-                              >
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                              </button>
-                            `
-                            : ""
-                        }
-                      </div>
-                    </div>
-                    <div class="text-gray-500 text-sm mt-1">
-                      ${formatDisplayDate(item.date)}
-                    </div>
-                    <div class="mt-2 text-gray-700">
-                      ${item.description}
-                    </div>
-                  </div>
+              <div class="timeline-item ${item.type || "update"} flex relative"
+                   onclick="showDetail('${item._id}')">
+                <div class="flex flex-col items-center">
+                  <div class="timeline-dot ${item.type || "update"}"></div>
                 </div>
-              `
-          )
-          .join("");
-
-        const timelineContainer = document.getElementById("timelineContainer");
-        timelineContainer.innerHTML = `
-            ${timelineHTML}
-          `;
-
-        // 更新資源區塊
-        const resourcesHTML = (data.resources || [])
-          .sort((a, b) => a.order - b.order)
-          .map(
-            (resource) => `
-                <div class="border rounded-lg p-4 space-y-2">
-                  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
-                    <h3 class="font-medium text-lg">${resource.title}</h3>
-                    <div class="flex items-center space-x-2">
-                      <span class="text-sm text-gray-500">
-                        ${formatDisplayDate(resource.createdAt)}
-                      </span>
+                <div class="timeline-content ml-6 p-4 bg-gray-100 rounded-lg w-full">
+                  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                    <span class="font-medium">${item.phase}</span>
+                    <div class="flex items-center space-x-2 mt-2 sm:mt-0">
+                      <span class="timeline-badge badge-${
+                        item.type || "update"
+                      }">${getTimelineBadgeText(item.type)}</span>
                       ${
                         hasPermission
                           ? `
                             <button
-                              onclick="editResource(event, '${
-                                resource._id
-                              }', ${JSON.stringify(resource).replace(
+                              onclick="editTimelineEvent(event, '${
+                                item._id
+                              }', ${JSON.stringify(item).replace(
                               /"/g,
                               "&quot;"
                             )})"
                               class="text-blue-600 hover:text-blue-800 text-sm"
                               title="編輯"
                             >
-                              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5
+                                  21.036H3v-3.572L16.732 3.732z" />
                               </svg>
                             </button>
                             <button
-                              onclick="deleteResource(event, '${resource._id}')"
+                              onclick="deleteTimelineEvent(event, '${
+                                item._id
+                              }')"
                               class="text-red-600 hover:text-red-800 text-sm"
                               title="刪除"
                             >
-                              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M19 7l-.867 12.142A2 2 0 0116.138
+                                  21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0
+                                  00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                               </svg>
                             </button>
                           `
@@ -1475,97 +1209,173 @@
                       }
                     </div>
                   </div>
-                  <div class="prose max-w-none">
-                    ${
-                      resource.type === "link"
-                        ? `<a href="${resource.url}" target="_blank" class="text-blue-600 hover:underline">${resource.content}</a>`
-                        : `<p class="whitespace-pre-wrap">${resource.content}</p>`
-                    }
+                  <div class="text-gray-500 text-sm mt-1">
+                    ${formatDisplayDate(item.date)}
                   </div>
-                  ${
-                    resource.url && resource.type !== "link"
-                      ? `<div class="mt-2">
-                          <a href="${resource.url}" target="_blank" class="text-sm text-blue-600 hover:underline">相關連結</a>
-                        </div>`
-                      : ""
-                  }
+                  <div class="mt-2 text-gray-700">
+                    ${item.description}
+                  </div>
                 </div>
-              `
+              </div>
+            `
           )
           .join("");
+        document.getElementById("timelineContainer").innerHTML = timelineHTML;
 
-        const resourcesContainer =
-          document.getElementById("resourcesContainer");
-        resourcesContainer.innerHTML =
-          resourcesHTML ||
-          '<p class="text-gray-500 text-center">尚無相關資料</p>';
-
-        // 更新聯絡人資訊
-        const contactsHTML = (data.contacts || [])
+        // 資源
+        const resourcesHTML = (data.resources || [])
+          .sort((a, b) => a.order - b.order)
           .map(
-            (contact) => `
-                <div class="border rounded-lg p-4 space-y-2">
-                  <h3 class="font-medium">${contact.name}</h3>
-                  <p class="text-gray-600 text-sm mt-1">${contact.title}</p>
-                  <div class="mt-2 space-y-1">
-                    <p class="text-sm">
-                      <span class="text-gray-500">Email:</span>
-                      <a href="mailto:${contact.email}" class="text-blue-600">${
-              contact.email
-            }</a>
-                    </p>
+            (resource) => `
+              <div class="border rounded-lg p-4 space-y-2">
+                <div
+                  class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2
+                  sm:space-y-0 sm:space-x-4"
+                >
+                  <h3 class="font-medium text-lg">${resource.title}</h3>
+                  <div class="flex items-center space-x-2">
+                    <span class="text-sm text-gray-500">
+                      ${formatDisplayDate(resource.createdAt)}
+                    </span>
                     ${
-                      contact.phone
-                        ? `<p class="text-sm">
-                            <span class="text-gray-500">電話:</span>
-                            <a href="tel:${contact.phone}" class="text-blue-600">${contact.phone}</a>
-                          </p>`
-                        : ""
-                    }
-                  </div>
-                  ${
-                    hasPermission
-                      ? `
-                        <div class="flex justify-end mt-4 space-x-2">
+                      hasPermission
+                        ? `
                           <button
-                            onclick="editContact(event, '${
-                              contact._id
-                            }', ${JSON.stringify(contact).replace(
-                          /"/g,
-                          "&quot;"
-                        )})"
+                            onclick="editResource(event, '${
+                              resource._id
+                            }', ${JSON.stringify(resource).replace(
+                            /"/g,
+                            "&quot;"
+                          )})"
                             class="text-blue-600 hover:text-blue-800 text-sm"
                             title="編輯"
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                              viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0
+                                113.536 3.536L6.5 21.036H3v-3.572L16.732
+                                3.732z" />
                             </svg>
                           </button>
                           <button
-                            onclick="deleteContact(event, '${contact._id}')"
+                            onclick="deleteResource(event, '${resource._id}')"
                             class="text-red-600 hover:text-red-800 text-sm"
                             title="刪除"
                           >
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                              viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M19 7l-.867 12.142A2 2 0
+                                0116.138 21H7.862a2 2 0 01-1.995-1.858L5
+                                7m5 4v6m4-6v6m1-10V4a1 1 0
+                                00-1-1h-4a1 1 0 00-1 1v3M4
+                                7h16" />
                             </svg>
                           </button>
-                        </div>
+                        `
+                        : ""
+                    }
+                  </div>
+                </div>
+                <div class="prose max-w-none">
+                  ${
+                    resource.type === "link"
+                      ? `<a href="${resource.url}" target="_blank" class="text-blue-600 hover:underline">${resource.content}</a>`
+                      : `<p class="whitespace-pre-wrap">${resource.content}</p>`
+                  }
+                </div>
+                ${
+                  resource.url && resource.type !== "link"
+                    ? `<div class="mt-2">
+                        <a href="${resource.url}" target="_blank" class="text-sm text-blue-600 hover:underline">相關連結</a>
+                      </div>`
+                    : ""
+                }
+              </div>
+            `
+          )
+          .join("");
+        document.getElementById("resourcesContainer").innerHTML =
+          resourcesHTML ||
+          '<p class="text-gray-500 text-center">尚無相關資料</p>';
+
+        // 聯絡人
+        const contactsHTML = (data.contacts || [])
+          .map(
+            (contact) => `
+              <div class="border rounded-lg p-4 space-y-2">
+                <h3 class="font-medium">${contact.name}</h3>
+                <p class="text-gray-600 text-sm mt-1">${contact.title}</p>
+                <div class="mt-2 space-y-1">
+                  <p class="text-sm">
+                    <span class="text-gray-500">Email:</span>
+                    <a href="mailto:${contact.email}" class="text-blue-600">${
+              contact.email
+            }</a>
+                  </p>
+                  ${
+                    contact.phone
+                      ? `
+                        <p class="text-sm">
+                          <span class="text-gray-500">電話:</span>
+                          <a href="tel:${contact.phone}" class="text-blue-600">${contact.phone}</a>
+                        </p>
                       `
                       : ""
                   }
                 </div>
-              `
+                ${
+                  hasPermission
+                    ? `
+                      <div class="flex justify-end mt-4 space-x-2">
+                        <button
+                          onclick="editContact(event, '${
+                            contact._id
+                          }', ${JSON.stringify(contact).replace(
+                        /"/g,
+                        "&quot;"
+                      )})"
+                          class="text-blue-600 hover:text-blue-800 text-sm"
+                          title="編輯"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5
+                              2.5 0 113.536 3.536L6.5
+                              21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                        </button>
+                        <button
+                          onclick="deleteContact(event, '${contact._id}')"
+                          class="text-red-600 hover:text-red-800 text-sm"
+                          title="刪除"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M19 7l-.867 12.142A2 2 0
+                              0116.138
+                              21H7.862a2 2 0 01-1.995-1.858L5
+                              7m5 4v6m4-6v6m1-10V4a1 1 0
+                              00-1-1h-4a1 1 0 00-1 1v3M4
+                              7h16" />
+                          </svg>
+                        </button>
+                      </div>
+                    `
+                    : ""
+                }
+              </div>
+            `
           )
           .join("");
-
-        const contactsContainer = document.getElementById("contactsContainer");
-        contactsContainer.innerHTML =
+        document.getElementById("contactsContainer").innerHTML =
           contactsHTML ||
           '<p class="text-gray-500 text-center">尚無聯絡窗口資訊</p>';
       }
 
-      // 輔助函數：獲取時間軸徽章文字
       function getTimelineBadgeText(type) {
         const badgeTexts = {
           create: "新增",
@@ -1576,20 +1386,6 @@
         };
         return badgeTexts[type] || "更新";
       }
-
-      // 輔助函數：獲取徽章顏色
-      function getBadgeColor(type) {
-        const badgeColors = {
-          create: "green-500",
-          update: "blue-500",
-          delete: "red-500",
-          contact: "purple-500",
-          phase: "orange-500",
-        };
-        return badgeColors[type] || "blue-500";
-      }
-
-      // 輔助函數：獲取最新的時間軸階段
       function getLatestPhase(timeline) {
         if (!timeline || timeline.length === 0) {
           return {
@@ -1598,13 +1394,9 @@
             description: "",
           };
         }
-
-        // 根據日期排序時間軸，最新的在前
         const sortedTimeline = [...timeline].sort((a, b) => {
           return new Date(b.date) - new Date(a.date);
         });
-
-        // 返回最新的事件階段和描述
         return {
           phase: sortedTimeline[0].phase,
           date: sortedTimeline[0].date,
@@ -1612,42 +1404,44 @@
         };
       }
 
-      // 時間軸操作函數
+      function getPhaseColor(phase) {
+        const phaseClasses = {
+          初步接觸: "phase-badge phase-initial",
+          確認合作項目: "phase-badge phase-confirm",
+          場地勘查: "phase-badge phase-survey",
+          設備部署: "phase-badge phase-deploy",
+          數據收集: "phase-badge phase-collect",
+          分析與優化: "phase-badge phase-analyze",
+          完成階段: "phase-badge phase-complete",
+        };
+        return phaseClasses[phase] || "phase-badge phase-complete";
+      }
+
+      // 時間軸事件
       async function addTimelineItem() {
         if (!checkUserPermission()) {
           alert("您沒有權限執行此操作");
           return;
         }
-
-        // 獲取當前台灣時間
         const currentTaiwanTime = new Date(getCurrentTaiwanTime());
-
         editTimelineEvent(null, null, {
-          event: "階段更新", // 預設事件名稱
+          event: "階段更新",
           phase: "初步接觸",
           description: "",
           date: currentTaiwanTime.toISOString(),
-          type: "create", // 確保 type 為 'create' 新增事件
-          isMain: false, // 預設非主責項目
+          type: "create",
+          isMain: false,
         });
       }
-
       function editTimelineEvent(event, eventId, eventData) {
-        // 如果 event 存在，阻止事件冒泡
-        if (event && event.stopPropagation) {
-          event.stopPropagation();
-        }
-
+        if (event && event.stopPropagation) event.stopPropagation();
         if (!checkUserPermission()) {
           alert("您沒有權限執行此操作");
           return;
         }
-
         const modal = document.getElementById("editModal");
         const form = document.getElementById("editTimelineForm");
-
         if (eventId) {
-          // 編輯現有事件
           document.getElementById("eventId").value = eventId;
           document.getElementById("phase").value =
             eventData.phase || "初步接觸";
@@ -1658,88 +1452,66 @@
             alert("事件日期無效。");
             return;
           }
-          const formattedDate = formatDateToInputValue(date);
-          document.getElementById("date").value = formattedDate;
+          document.getElementById("date").value = formatDateToInputValue(date);
         } else {
-          // 新增新事件
           document.getElementById("eventId").value = "";
-          document.getElementById("phase").value =
-            eventData.phase || "初步接觸";
-          document.getElementById("description").value =
-            eventData.description || "";
+          document.getElementById("phase").value = eventData.phase;
+          document.getElementById("description").value = eventData.description;
           const date = new Date(eventData.date);
           if (isNaN(date.getTime())) {
             alert("事件日期無效。");
             return;
           }
-          const formattedDate = formatDateToInputValue(date);
-          document.getElementById("date").value = formattedDate;
+          document.getElementById("date").value = formatDateToInputValue(date);
         }
-
         modal.classList.remove("hidden");
-
         form.onsubmit = async (e) => {
           e.preventDefault();
           await updateTimelineEvent();
         };
       }
-
       function closeEditModal() {
-        const modal = document.getElementById("editModal");
-        modal.classList.add("hidden");
+        document.getElementById("editModal").classList.add("hidden");
       }
-
       async function updateTimelineEvent() {
         if (!checkUserPermission()) {
           alert("您沒有權限執行此操作");
           return;
         }
-
         const eventId = document.getElementById("eventId").value;
         const partnerId = window.partnerData._id;
         const token = localStorage.getItem("token");
-
         const phase = document.getElementById("phase").value;
         const description = document.getElementById("description").value.trim();
         const dateValue = document.getElementById("date").value;
-
         if (!dateValue) {
           alert("請輸入有效的日期時間。");
           return;
         }
-
-        // 將使用者輸入的日期時間（假設為台北時間）轉換為 UTC ISO 字符串
         const date = new Date(`${dateValue}:00+08:00`);
         const utcDate = date.toISOString();
-
         if (isNaN(date.getTime())) {
           alert("請輸入有效的日期時間。");
           return;
         }
 
-        // 檢查該階段是否已經存在於 timeline 中
         let type = "create";
         const existingEvents = window.partnerData.timeline || [];
         const phaseExists = existingEvents.some(
           (event) =>
-            event.phase === phase && (!eventId || event._id !== eventId) // 排除正在編輯的事件
+            event.phase === phase && (!eventId || event._id !== eventId)
         );
-
         if (phaseExists) {
           type = "update";
         }
 
-        // 準備資料
         const updatedData = {
           event: `階段更新：${phase}`,
           description: description,
           phase: phase,
-          date: utcDate, // 使用 UTC ISO 字符串
-          type: type, // 明確設置 type
+          date: utcDate,
+          type: type,
         };
-
-        console.log("Sending data with type:", type); // 添加日誌以確認 type 值
-
         try {
           const response = await fetch(
             eventId
@@ -1754,14 +1526,12 @@
               body: JSON.stringify(updatedData),
             }
           );
-
           if (!response.ok) {
             const errorData = await response.json();
             throw new Error(
               errorData.message || `HTTP error! status: ${response.status}`
             );
           }
-
           closeEditModal();
           await loadPartnerData();
         } catch (error) {
@@ -1769,25 +1539,15 @@
           alert("更新事件時發生錯誤：" + error.message);
         }
       }
-
       async function deleteTimelineEvent(event, eventId) {
-        // 阻止事件冒泡
-        if (event && event.stopPropagation) {
-          event.stopPropagation();
-        }
-
+        if (event && event.stopPropagation) event.stopPropagation();
         if (!checkUserPermission()) {
           alert("您沒有權限執行此操作");
           return;
         }
-
-        if (!confirm("確定要刪除此事件嗎？")) {
-          return;
-        }
-
+        if (!confirm("確定要刪除此事件嗎？")) return;
         const token = localStorage.getItem("token");
         const partnerId = window.partnerData._id;
-
         try {
           const response = await fetch(
             `/api/partners/${partnerId}/timeline/${eventId}`,
@@ -1799,14 +1559,12 @@
               },
             }
           );
-
           if (!response.ok) {
             const errorData = await response.json();
             throw new Error(
               errorData.message || `HTTP error! status: ${response.status}`
             );
           }
-
           await loadPartnerData();
         } catch (error) {
           console.error("Error deleting timeline event:", error);
@@ -1814,13 +1572,12 @@
         }
       }
 
-      // 資源相關函數
+      // 資源
       async function addResourceItem() {
         if (!checkUserPermission()) {
           alert("您沒有權限執行此操作");
           return;
         }
-
         editResource(null, null, {
           title: "",
           type: "text",
@@ -1828,23 +1585,15 @@
           url: "",
         });
       }
-
       function editResource(event, resourceId, resourceData) {
-        // 如果 event 存在，阻止事件冒泡
-        if (event && event.stopPropagation) {
-          event.stopPropagation();
-        }
-
+        if (event && event.stopPropagation) event.stopPropagation();
         if (!checkUserPermission()) {
           alert("您沒有權限執行此操作");
           return;
         }
-
         const modal = document.getElementById("resourceModal");
         const form = document.getElementById("editResourceForm");
-
         if (resourceId) {
-          // 編輯現有資源
           document.getElementById("resourceId").value = resourceId;
           document.getElementById("resourceTitle").value =
             resourceData.title || "";
@@ -1854,37 +1603,29 @@
             resourceData.content || "";
           document.getElementById("resourceUrl").value = resourceData.url || "";
         } else {
-          // 新增新資源
           document.getElementById("resourceId").value = "";
           document.getElementById("resourceTitle").value = "";
           document.getElementById("resourceType").value = "text";
           document.getElementById("resourceContent").value = "";
           document.getElementById("resourceUrl").value = "";
         }
-
         modal.classList.remove("hidden");
-
         form.onsubmit = async (e) => {
           e.preventDefault();
           await updateResource();
         };
       }
-
       function closeResourceModal() {
-        const modal = document.getElementById("resourceModal");
-        modal.classList.add("hidden");
+        document.getElementById("resourceModal").classList.add("hidden");
       }
-
       async function updateResource() {
         if (!checkUserPermission()) {
           alert("您沒有權限執行此操作");
           return;
         }
-
         const resourceId = document.getElementById("resourceId").value;
         const partnerId = window.partnerData._id;
         const token = localStorage.getItem("token");
-
         const updatedResource = {
           title: document.getElementById("resourceTitle").value.trim(),
           type: document.getElementById("resourceType").value,
@@ -1894,7 +1635,6 @@
             window.partnerData.resources.find((r) => r._id === resourceId)
               ?.order || 0,
         };
-
         try {
           const response = await fetch(
             resourceId
@@ -1909,14 +1649,12 @@
               body: JSON.stringify(updatedResource),
             }
           );
-
           if (!response.ok) {
             const errorData = await response.json();
             throw new Error(
               errorData.message || `HTTP error! status: ${response.status}`
             );
           }
-
           closeResourceModal();
           await loadPartnerData();
         } catch (error) {
@@ -1924,25 +1662,15 @@
           alert("更新資源時發生錯誤：" + error.message);
         }
       }
-
       async function deleteResource(event, resourceId) {
-        // 阻止事件冒泡
-        if (event && event.stopPropagation) {
-          event.stopPropagation();
-        }
-
+        if (event && event.stopPropagation) event.stopPropagation();
         if (!checkUserPermission()) {
           alert("您沒有權限執行此操作");
           return;
         }
-
-        if (!confirm("確定要刪除此資源嗎？")) {
-          return;
-        }
-
+        if (!confirm("確定要刪除此資源嗎？")) return;
         const token = localStorage.getItem("token");
         const partnerId = window.partnerData._id;
-
         try {
           const response = await fetch(
             `/api/partners/${partnerId}/resources/${resourceId}`,
@@ -1954,14 +1682,12 @@
               },
             }
           );
-
           if (!response.ok) {
             const errorData = await response.json();
             throw new Error(
               errorData.message || `HTTP error! status: ${response.status}`
             );
           }
-
           await loadPartnerData();
         } catch (error) {
           console.error("Error deleting resource:", error);
@@ -1969,13 +1695,12 @@
         }
       }
 
-      // 聯絡窗口相關函數
+      // 聯絡人
       async function addContactItem() {
         if (!checkUserPermission()) {
           alert("您沒有權限執行此操作");
           return;
         }
-
         editContact(null, null, {
           name: "",
           title: "",
@@ -1983,23 +1708,15 @@
           phone: "",
         });
       }
-
       function editContact(event, contactId, contactData) {
-        // 如果 event 存在，阻止事件冒泡
-        if (event && event.stopPropagation) {
-          event.stopPropagation();
-        }
-
+        if (event && event.stopPropagation) event.stopPropagation();
         if (!checkUserPermission()) {
           alert("您沒有權限執行此操作");
           return;
         }
-
         const modal = document.getElementById("contactModal");
         const form = document.getElementById("editContactForm");
-
         if (contactId) {
-          // 編輯現有聯絡人
           document.getElementById("contactId").value = contactId;
           document.getElementById("contactName").value = contactData.name || "";
           document.getElementById("contactTitle").value =
@@ -2009,44 +1726,35 @@
           document.getElementById("contactPhone").value =
             contactData.phone || "";
         } else {
-          // 新增新聯絡人
           document.getElementById("contactId").value = "";
           document.getElementById("contactName").value = "";
           document.getElementById("contactTitle").value = "";
           document.getElementById("contactEmail").value = "";
           document.getElementById("contactPhone").value = "";
         }
-
         modal.classList.remove("hidden");
-
         form.onsubmit = async (e) => {
           e.preventDefault();
           await updateContact();
         };
       }
-
       function closeContactModal() {
-        const modal = document.getElementById("contactModal");
-        modal.classList.add("hidden");
+        document.getElementById("contactModal").classList.add("hidden");
       }
-
       async function updateContact() {
         if (!checkUserPermission()) {
           alert("您沒有權限執行此操作");
           return;
         }
-
         const contactId = document.getElementById("contactId").value;
         const partnerId = window.partnerData._id;
         const token = localStorage.getItem("token");
-
         const updatedContact = {
           name: document.getElementById("contactName").value.trim(),
           title: document.getElementById("contactTitle").value.trim(),
           email: document.getElementById("contactEmail").value.trim(),
           phone: document.getElementById("contactPhone").value.trim(),
         };
-
         try {
           const response = await fetch(
             contactId
@@ -2061,14 +1769,12 @@
               body: JSON.stringify(updatedContact),
             }
           );
-
           if (!response.ok) {
             const errorData = await response.json();
             throw new Error(
               errorData.message || `HTTP error! status: ${response.status}`
             );
           }
-
           closeContactModal();
           await loadPartnerData();
         } catch (error) {
@@ -2076,25 +1782,15 @@
           alert("更新聯絡人時發生錯誤：" + error.message);
         }
       }
-
       async function deleteContact(event, contactId) {
-        // 阻止事件冒泡
-        if (event && event.stopPropagation) {
-          event.stopPropagation();
-        }
-
+        if (event && event.stopPropagation) event.stopPropagation();
         if (!checkUserPermission()) {
           alert("您沒有權限執行此操作");
           return;
         }
-
-        if (!confirm("確定要刪除此聯絡人嗎？")) {
-          return;
-        }
-
+        if (!confirm("確定要刪除此聯絡人嗎？")) return;
         const token = localStorage.getItem("token");
         const partnerId = window.partnerData._id;
-
         try {
           const response = await fetch(
             `/api/partners/${partnerId}/contacts/${contactId}`,
@@ -2106,14 +1802,12 @@
               },
             }
           );
-
           if (!response.ok) {
             const errorData = await response.json();
             throw new Error(
               errorData.message || `HTTP error! status: ${response.status}`
             );
           }
-
           await loadPartnerData();
         } catch (error) {
           console.error("Error deleting contact:", error);
@@ -2121,53 +1815,43 @@
         }
       }
 
-      // 新增函數：顯示事件詳細資料
+      // 顯示事件詳細資料
       function showDetail(eventId) {
         const timeline = window.partnerData.timeline || [];
         const eventData = timeline.find((item) => item._id === eventId);
-
         if (!eventData) {
           alert("找不到該事件的詳細資料。");
           return;
         }
-
         const detailContent = document.getElementById("detailContent");
         const formattedDate = formatDisplayDate(eventData.date);
-
         detailContent.innerHTML = `
-            <p><strong>執行階段：</strong> ${eventData.phase}</p>
-            <p><strong>事件名稱：</strong> ${eventData.event}</p>
-            <p><strong>日期時間：</strong> ${formattedDate}</p>
-            <p><strong>描述：</strong> ${eventData.description}</p>
-            ${
-              eventData.type
-                ? `<p><strong>類型：</strong> ${getTimelineBadgeText(
-                    eventData.type
-                  )}</p>`
-                : ""
-            }
-          `;
-
-        const detailModal = document.getElementById("detailModal");
-        detailModal.classList.remove("hidden");
+          <p><strong>執行階段：</strong> ${eventData.phase}</p>
+          <p><strong>事件名稱：</strong> ${eventData.event}</p>
+          <p><strong>日期時間：</strong> ${formattedDate}</p>
+          <p><strong>描述：</strong> ${eventData.description}</p>
+          ${
+            eventData.type
+              ? `<p><strong>類型：</strong> ${getTimelineBadgeText(
+                  eventData.type
+                )}</p>`
+              : ""
+          }
+        `;
+        document.getElementById("detailModal").classList.remove("hidden");
       }
-
       function closeDetailModal() {
-        const detailModal = document.getElementById("detailModal");
-        detailModal.classList.add("hidden");
+        document.getElementById("detailModal").classList.add("hidden");
       }
 
-      // 基本資訊編輯相關函數（更新後）
+      // 基本資訊編輯
       function editBasicInfo() {
         if (!checkUserPermission()) {
           alert("您沒有權限執行此操作");
           return;
         }
-
         const modal = document.getElementById("basicInfoModal");
         const form = document.getElementById("editBasicInfoForm");
-
-        // 填充現有資料
         document.getElementById("basicInstitution").value =
           window.partnerData.institution.name || "";
         document.getElementById("basicDepartment").value =
@@ -2178,31 +1862,23 @@
           window.partnerData.project.name || "";
         document.getElementById("basicProjectContent").value =
           window.partnerData.project.content || "";
-
         modal.classList.remove("hidden");
-
         form.onsubmit = async (e) => {
           e.preventDefault();
           await updateBasicInfo();
         };
       }
-
       function closeBasicInfoModal() {
-        const modal = document.getElementById("basicInfoModal");
-        modal.classList.add("hidden");
+        document.getElementById("basicInfoModal").classList.add("hidden");
       }
-
       async function updateBasicInfo() {
         if (!checkUserPermission()) {
           alert("您沒有權限執行此操作");
           return;
         }
-
         const partnerId = window.partnerData._id;
         const token = localStorage.getItem("token");
-
         const updatedBasicInfo = {
-          // 保留原有的國家資訊
           country: window.partnerData.country,
           institution: {
             name: document.getElementById("basicInstitution").value.trim(),
@@ -2217,10 +1893,8 @@
               .getElementById("basicProjectContent")
               .value.trim(),
           },
-          // 加入 progress 資訊
-          progress: window.partnerData.progress, // 保留原有的進度資訊
+          progress: window.partnerData.progress,
         };
-
         try {
           const response = await fetch(`/api/partners/${partnerId}`, {
             method: "PUT",
@@ -2230,14 +1904,12 @@
             },
             body: JSON.stringify(updatedBasicInfo),
           });
-
           if (!response.ok) {
             const errorData = await response.json();
             throw new Error(
               errorData.message || `HTTP error! status: ${response.status}`
             );
           }
-
           closeBasicInfoModal();
           await loadPartnerData();
           alert("基本資訊已成功更新！");
@@ -2247,72 +1919,15 @@
         }
       }
 
-      // 漢堡選單功能
-      function setupHamburgerMenu() {
-        const hamburger = document.getElementById("hamburger");
-        const navLinks = document.getElementById("navLinks");
-
-        if (hamburger && navLinks) {
-          hamburger.addEventListener("click", () => {
-            const isExpanded = navLinks.classList.toggle("show");
-            hamburger.classList.toggle("active");
-            hamburger.setAttribute("aria-expanded", isExpanded);
-          });
-
-          // 當使用者點擊選單中的連結時，關閉選單
-          navLinks.addEventListener("click", (e) => {
-            if (e.target.classList.contains("nav-item")) {
-              navLinks.classList.remove("show");
-              hamburger.classList.remove("active");
-              hamburger.setAttribute("aria-expanded", "false");
-            }
-          });
-        }
-      }
-
-      // 關閉漢堡選單
-      function closeHamburgerMenu() {
-        const hamburger = document.getElementById("hamburger");
-        const navLinks = document.getElementById("navLinks");
-
-        if (hamburger && navLinks && navLinks.classList.contains("show")) {
-          navLinks.classList.remove("show");
-          hamburger.classList.remove("active");
-          hamburger.setAttribute("aria-expanded", "false");
-        }
-      }
-
-      // 在 DOMContentLoaded 時添加模態框和初始化
       document.addEventListener("DOMContentLoaded", () => {
-        // 初始化頁面數據
         loadPartnerData();
-
-        // 添加切換倒序排列的事件監聽
         const reverseOrderToggle =
           document.getElementById("reverseOrderToggle");
         reverseOrderToggle.addEventListener("change", () => {
           isReverseOrder = reverseOrderToggle.checked;
-          updateUI(window.partnerData); // 重新更新 UI 以反映排列順序
+          updateUI(window.partnerData);
         });
-
-        // 初始化漢堡選單
-        setupHamburgerMenu();
       });
-
-      // 新增這個輔助函數到 script 中
-      function getPhaseColor(phase) {
-        const phaseClasses = {
-          初步接觸: "phase-badge phase-initial",
-          確認合作項目: "phase-badge phase-confirm",
-          場地勘查: "phase-badge phase-survey",
-          設備部署: "phase-badge phase-deploy",
-          數據收集: "phase-badge phase-collect",
-          分析與優化: "phase-badge phase-analyze",
-          完成階段: "phase-badge phase-complete",
-        };
-
-        return phaseClasses[phase] || "phase-badge phase-complete";
-      }
     </script>
   </body>
 </html>

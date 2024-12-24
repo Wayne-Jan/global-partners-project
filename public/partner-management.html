@@ -214,6 +214,17 @@
                 <option value="子計畫九">子計畫九</option>
               </select>
             </div>
+            <div class="col-span-2">
+              <!-- 使用 col-span-2 讓這個欄位佔據兩列的寬度 -->
+              <label class="block text-sm font-medium text-gray-700"
+                >合作項目內容</label
+              >
+              <textarea
+                name="projectContent"
+                rows="4"
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+              ></textarea>
+            </div>
           </div>
         </div>
 
@@ -525,6 +536,7 @@
           },
           project: {
             name: formData.get("projectName"),
+            content: formData.get("projectContent"),
           },
           progress: {
             phase: formData.get("phase"),
@@ -689,6 +701,8 @@
           data.institution.department || "";
         document.querySelector('[name="projectName"]').value =
           data.project.name;
+        document.querySelector('[name="projectContent"]').value =
+          data.project.content || "";
         document.querySelector('[name="phase"]').value = data.progress.phase;
         document.querySelector('[name="progressDetails"]').value =
           data.progress.details || "";

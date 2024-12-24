@@ -66,6 +66,10 @@ const partnerSchema = new mongoose.Schema(
           "子計畫九",
         ],
       },
+      content: {
+        type: String,
+        required: false, // 設為非必填
+      },
     },
     progress: {
       phase: {

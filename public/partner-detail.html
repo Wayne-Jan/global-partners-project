@@ -837,20 +837,45 @@
           details: latestPhase.description,
         };
 
+        // 更新基本資訊
+        document.getElementById("basicInfo").innerHTML = `
+          <div class="relative">
+            <div class="absolute top-0 left-0 bg-blue-100 text-blue-800 px-3 py-1 rounded-bl-lg rounded-tr-lg text-sm font-medium">
+              ${data.project.name}
+            </div>
+            <div class="flex items-center space-x-4 pt-8">
+              <span class="text-4xl">${data.country.flag}</span>
+              <h1 class="text-2xl font-bold">${data.country.name}</h1>
+            </div>
+            <div class="mt-4">
+              <h2 class="text-xl text-blue-600 font-semibold">
+                ${data.institution.name}
+              </h2>
+              ${
+                data.institution.department
+                  ? `<p class="text-gray-600 mt-1">${data.institution.department}</p>`
+                  : ""
+              }
+            </div>
+          </div>
+          `;
+
         // 更新進度資訊
         document.getElementById("progressInfo").innerHTML = `
-    <div>
-      <h3 class="font-medium text-gray-700">當前階段</h3>
-      <p class="mt-1 text-lg">${data.progress.phase}</p>
-      <p class="text-sm text-gray-500 mt-1">${data.progress.details || ""}</p>
-    </div>
-    <div>
-      <h3 class="font-medium text-gray-700">最後更新</h3>
-      <p class="mt-1">${new Date(data.progress.lastUpdate).toLocaleString(
-        "zh-TW"
-      )}</p>
-    </div>
-  `;
+          <div>
+            <h3 class="font-medium text-gray-700">當前階段</h3>
+            <p class="mt-1 text-lg">${data.progress.phase}</p>
+            <p class="text-sm text-gray-500 mt-1">${
+              data.progress.details || ""
+            }</p>
+          </div>
+          <div>
+            <h3 class="font-medium text-gray-700">最後更新</h3>
+            <p class="mt-1">${new Date(data.progress.lastUpdate).toLocaleString(
+              "zh-TW"
+            )}</p>
+          </div>
+        `;
 
         const hasPermission = checkUserPermission();
 

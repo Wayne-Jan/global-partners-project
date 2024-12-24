@@ -3,6 +3,33 @@ const router = express.Router();
 const Partner = require("../models/Partner");
 const { auth, isAdmin } = require("../middleware/auth");
 
+// 更新進度的輔助函數
+async function updateProgressFromTimeline(partner) {
+  if (!partner.timeline || partner.timeline.length === 0) {
+    // 設置默認進度
+    partner.progress = {
+      phase: "初步接觸",
+      lastUpdate: new Date(),
+      details: "初始階段", // 可選
+    };
+    return;
+  }
+
+  // 根據日期排序時間軸，獲取最新事件
+  const sortedTimeline = [...partner.timeline].sort(
+    (a, b) => new Date(b.date) - new Date(a.date)
+  );
+
+  // 更新進度資訊
+  if (!partner.progress) {
+    partner.progress = {};
+  }
+
+  partner.progress.phase = sortedTimeline[0].phase;
+  partner.progress.lastUpdate = new Date(sortedTimeline[0].date);
+  partner.progress.details = sortedTimeline[0].description || ""; // 可選
+}
+
 // 取得國家列表 (放在最前面避免與 :id 路由衝突)
 router.get("/utils/countries", auth, async (req, res) => {
   try {
@@ -94,9 +121,26 @@ router.post("/:partnerId/timeline", auth, isAdmin, async (req, res) => {
     const { partnerId } = req.params;
     const { event, description, phase, date } = req.body;
 
+    // 驗證必要欄位
+    if (!event || !description || !phase || !date) {
+      return res.status(400).json({
+        message: "缺少必要欄位",
+        details: "事件、描述、階段和日期都是必填的",
+      });
+    }
+
     const partner = await Partner.findById(partnerId);
     if (!partner) {
       return res.status(404).json({ message: "找不到此合作夥伴" });
+    }
+
+    // 確保 partner.progress 物件存在
+    if (!partner.progress) {
+      partner.progress = {
+        phase: phase,
+        lastUpdate: new Date(date),
+        details: description,
+      };
     }
 
     const newTimelineEvent = {
@@ -112,14 +156,25 @@ router.post("/:partnerId/timeline", auth, isAdmin, async (req, res) => {
     };
 
     partner.timeline.push(newTimelineEvent);
+
+    // 更新進度資訊
+    await updateProgressFromTimeline(partner);
+
     const updatedPartner = await partner.save();
 
     res.status(201).json({
       message: "時間軸事件已成功新增",
       timeline: updatedPartner.timeline,
+      progress: updatedPartner.progress,
     });
   } catch (error) {
     console.error("Create timeline error:", error);
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        message: "資料驗證失敗",
+        details: Object.values(error.errors).map((err) => err.message),
+      });
+    }
     res.status(500).json({
       message: "新增時間軸事件失敗",
       error: error.message,
@@ -159,11 +214,15 @@ router.put("/:partnerId/timeline/:eventId", auth, isAdmin, async (req, res) => {
       type: partner.timeline[timelineIndex].type,
     };
 
+    // 更新進度資訊
+    await updateProgressFromTimeline(partner);
+
     const updatedPartner = await partner.save();
 
     res.json({
       message: "時間軸事件已成功更新",
       timeline: updatedPartner.timeline,
+      progress: updatedPartner.progress,
     });
   } catch (error) {
     console.error("Update timeline error:", error);
@@ -200,12 +259,119 @@ router.delete(
         return res.status(404).json({ message: "找不到此時間軸事件" });
       }
 
+      // 刪除時間軸事件
       partner.timeline.splice(timelineIndex, 1);
+
+      // 更新進度資訊
+      await updateProgressFromTimeline(partner);
+
       const updatedPartner = await partner.save();
 
       res.json({
         message: "時間軸事件已成功刪除",
         timeline: updatedPartner.timeline,
+        progress: updatedPartner.progress,
+      });
+    } catch (error) {
+      console.error("Delete timeline error:", error);
+      if (error.name === "CastError") {
+        return res.status(400).json({ message: "無效的ID格式" });
+      }
+      res.status(500).json({
+        message: "刪除時間軸事件失敗",
+        error: error.message,
+      });
+    }
+  }
+);
+
+// 直接更新進度
+router.put("/:partnerId/progress", auth, isAdmin, async (req, res) => {
+  try {
+    const { partnerId } = req.params;
+    const { phase, lastUpdate } = req.body;
+
+    const partner = await Partner.findById(partnerId);
+    if (!partner) {
+      return res.status(404).json({ message: "找不到此合作夥伴" });
+    }
+
+    // 更新進度資訊
+    partner.progress = {
+      ...partner.progress,
+      phase,
+      lastUpdate: new Date(lastUpdate),
+    };
+
+    // 新增對應的時間軸事件
+    const timelineEvent = {
+      event: `階段更新：${phase}`,
+      description: "進度已更新",
+      phase,
+      date: new Date(lastUpdate),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      createdBy: req.user.userId,
+      updatedBy: req.user.userId,
+      type: "update",
+    };
+
+    partner.timeline.push(timelineEvent);
+
+    const updatedPartner = await partner.save();
+
+    res.json({
+      message: "進度已成功更新",
+      progress: updatedPartner.progress,
+      timeline: updatedPartner.timeline,
+    });
+  } catch (error) {
+    console.error("Update progress error:", error);
+    res.status(500).json({
+      message: "更新進度失敗",
+      error: error.message,
+    });
+  }
+});
+
+// 刪除時間軸事件
+router.delete(
+  "/:partnerId/timeline/:eventId",
+  auth,
+  isAdmin,
+  async (req, res) => {
+    try {
+      const { partnerId, eventId } = req.params;
+      const partner = await Partner.findById(partnerId);
+
+      if (!partner) {
+        return res.status(404).json({ message: "找不到此合作夥伴" });
+      }
+
+      if (!partner.timeline || !Array.isArray(partner.timeline)) {
+        return res.status(400).json({ message: "時間軸資料格式錯誤" });
+      }
+
+      const timelineIndex = partner.timeline.findIndex(
+        (event) => event._id.toString() === eventId
+      );
+
+      if (timelineIndex === -1) {
+        return res.status(404).json({ message: "找不到此時間軸事件" });
+      }
+
+      // 刪除時間軸事件
+      partner.timeline.splice(timelineIndex, 1);
+
+      // 更新進度資訊
+      await updateProgressFromTimeline(partner);
+
+      const updatedPartner = await partner.save();
+
+      res.json({
+        message: "時間軸事件已成功刪除",
+        timeline: updatedPartner.timeline,
+        progress: updatedPartner.progress,
       });
     } catch (error) {
       console.error("Delete timeline error:", error);

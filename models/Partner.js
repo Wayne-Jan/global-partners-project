@@ -13,6 +13,32 @@ const timelineSchema = new mongoose.Schema({
   description: {
     type: String,
   },
+  phase: {
+    type: String,
+    required: true,
+    enum: [
+      "初步接觸",
+      "確認合作項目",
+      "場地勘查",
+      "設備部署",
+      "數據收集",
+      "分析與優化",
+      "完成階段",
+    ],
+  },
+  type: {
+    type: String,
+    enum: ["create", "update", "delete"],
+    default: "create",
+  },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
+  updatedBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User",
+  },
 });
 
 const partnerSchema = new mongoose.Schema(

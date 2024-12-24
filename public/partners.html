@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>國際合作夥伴</title>
     <style>
-      /* Reset 與基本樣式 */
       * {
         margin: 0;
         padding: 0;
@@ -120,7 +119,7 @@
         color: #1e3a8a;
         padding: 4px 8px;
         border-radius: 9999px;
-        font-size: 12px;
+        font-size: 14px;
         font-weight: 500;
       }
 
@@ -183,7 +182,7 @@
       }
 
       .country-name {
-        font-size: 20px;
+        font-size: 21px;
         font-weight: bold;
       }
 
@@ -203,7 +202,7 @@
         background-color: #f9fafb;
         padding: 8px;
         border-radius: 0.375rem;
-        font-size: 14px;
+        font-size: 16px;
         color: #374151;
         margin-bottom: 16px;
         text-align: left; /* 文字靠左 */
@@ -251,7 +250,7 @@
 
       .project-name {
         margin: 0;
-        font-size: 14px;
+        font-size: 16px;
         font-weight: 500;
         color: #2c3e50;
         line-height: 1.4;
@@ -466,7 +465,7 @@
           .replace(/'/g, "&#039;");
       }
 
-      // 檢查登入狀態
+      // 檢查登入狀態與權限
       function checkAuthStatus() {
         try {
           const token = localStorage.getItem("token");
@@ -487,24 +486,73 @@
             return;
           }
 
-          if (token) {
+          if (token && user) {
+            // 用戶已登入
             elements.registerLink.style.display = "none";
             elements.loginLink.style.display = "none";
-            if (user.role === "admin") {
-              elements.dashboardLink.style.display = "inline-block";
-              elements.addPartnerLink.style.display = "inline-block";
-            }
             elements.logoutBtn.style.display = "inline-block";
+
+            // 新增合作夥伴按鈕的顯示邏輯
+            if (user.role === "admin" || user.role === "user") {
+              elements.addPartnerLink.style.display = "inline-block";
+            } else {
+              elements.addPartnerLink.style.display = "none";
+            }
+
+            // 管理系統按鈕只有管理員可見
+            elements.dashboardLink.style.display =
+              user.role === "admin" ? "inline-block" : "none";
           } else {
+            // 用戶未登入
             elements.registerLink.style.display = "inline-block";
             elements.loginLink.style.display = "inline-block";
             elements.dashboardLink.style.display = "none";
             elements.addPartnerLink.style.display = "none";
             elements.logoutBtn.style.display = "none";
           }
+
+          // 添加按鈕點擊事件
+          const addPartnerLink = document.querySelector("#addPartnerLink");
+          if (addPartnerLink) {
+            addPartnerLink.onclick = function (e) {
+              e.preventDefault();
+              if (!token) {
+                alert("請先登入");
+                window.location.href = "/login.html";
+                return;
+              }
+              window.location.href = "/partner-management.html";
+            };
+          }
         } catch (error) {
-          console.error("檢查登入狀態時發生錯誤:", error);
+          console.error("檢查權限時發生錯誤:", error);
         }
+      }
+
+      // 登出功能
+      function setupLogoutButton() {
+        const logoutBtn = document.querySelector("#logoutBtn");
+        if (logoutBtn) {
+          logoutBtn.addEventListener("click", () => {
+            localStorage.removeItem("token");
+            localStorage.removeItem("user");
+            window.location.href = "/partners.html";
+          });
+        }
+      }
+
+      // 在页面加載時初始化
+      function initializePage() {
+        checkAuthStatus();
+        setupLogoutButton();
+        loadPartners(); // 如果需要載入合作夥伴資料
+      }
+
+      // 確保 DOM 完全加載後再執行
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initializePage);
+      } else {
+        initializePage();
       }
 
       // 登出功能

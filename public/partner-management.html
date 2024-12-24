@@ -825,40 +825,56 @@
         const urlParams = new URLSearchParams(window.location.search);
         const partnerId = urlParams.get("id");
 
+        // 檢查是否登入
         if (!user || !user.role) {
           window.location.href = "/login.html";
           return;
         }
 
+        // admin 有所有權限
         if (user.role === "admin") {
           return;
         }
 
-        try {
-          const token = localStorage.getItem("token");
-          if (!token) {
-            throw new Error("未登入狀態");
+        // 對於一般用戶的權限檢查
+        if (user.role === "user") {
+          // 如果是新增操作（沒有 partnerId），則允許繼續
+          if (!partnerId) {
+            return;
           }
 
-          const response = await fetch(`/api/partners/${partnerId}`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
+          // 如果是編輯操作，則需要檢查國家權限
+          try {
+            const token = localStorage.getItem("token");
+            if (!token) {
+              throw new Error("未登入狀態");
+            }
 
-          if (!response.ok) {
-            throw new Error("無法載入資料");
-          }
+            const response = await fetch(`/api/partners/${partnerId}`, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+              },
+            });
 
-          const partner = await response.json();
-          const hasCountryPermission = (user.assignedCountries || []).includes(
-            partner.country.code
-          );
-          if (!hasCountryPermission) {
+            if (!response.ok) {
+              throw new Error("無法載入資料");
+            }
+
+            const partner = await response.json();
+            const hasCountryPermission = (
+              user.assignedCountries || []
+            ).includes(partner.country.code);
+
+            if (!hasCountryPermission) {
+              alert("您沒有權限編輯此合作夥伴的資料");
+              window.location.href = "/partners.html";
+            }
+          } catch (error) {
+            console.error("權限檢查失敗:", error);
             window.location.href = "/partners.html";
           }
-        } catch (error) {
-          console.error("權限檢查失敗:", error);
+        } else {
+          // 其他角色一律導向首頁
           window.location.href = "/partners.html";
         }
       }

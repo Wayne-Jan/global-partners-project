@@ -749,8 +749,58 @@
     </div>
 
     <script>
-      // 設置是否倒序排列時間軸
-      let isReverseOrder = true; // 設為 true 表示最新在上，false 表示最舊在上
+      // 在頂部定義全域變數
+      let isReverseOrder = true; // 預設為倒序排列
+
+      // 設置時區常量
+      const TIME_ZONE = "Asia/Taipei";
+
+      // 格式化日期為指定時區的本地字符串
+      function formatDateToLocaleString(date) {
+        return new Intl.DateTimeFormat("zh-TW", {
+          timeZone: TIME_ZONE,
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        }).format(date);
+      }
+
+      // 格式化日期為 datetime-local 所需的格式，指定時區
+      function formatDateToInputValue(date) {
+        const options = {
+          timeZone: TIME_ZONE,
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false,
+        };
+        const formatter = new Intl.DateTimeFormat("en-CA", options); // en-CA 格式為 YYYY-MM-DD
+        const parts = formatter.formatToParts(date);
+        const dateParts = {};
+        parts.forEach(({ type, value }) => {
+          dateParts[type] = value;
+        });
+        return `${dateParts.year}-${dateParts.month}-${dateParts.day}T${dateParts.hour}:${dateParts.minute}`;
+      }
+
+      // 獲取當前台灣時間
+      function getCurrentTaiwanTime() {
+        return new Date().toLocaleString("en-US", { timeZone: TIME_ZONE });
+      }
+
+      // 修改顯示日期的函數，使用台灣時間
+      function formatDisplayDate(dateString) {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) {
+          return "無效的日期";
+        }
+        return formatDateToLocaleString(date);
+      }
 
       // 檢查用戶權限
       function checkPermissions() {
@@ -821,6 +871,7 @@
           checkPermissions();
         } catch (error) {
           console.error("Error loading partner data:", error);
+          alert("載入合作夥伴資料時發生錯誤：" + error.message);
         }
       }
 
@@ -871,9 +922,7 @@
           </div>
           <div>
             <h3 class="font-medium text-gray-700">最後更新</h3>
-            <p class="mt-1">${new Date(data.progress.lastUpdate).toLocaleString(
-              "zh-TW"
-            )}</p>
+            <p class="mt-1">${formatDisplayDate(data.progress.lastUpdate)}</p>
           </div>
         `;
 
@@ -889,56 +938,56 @@
         const timelineHTML = sortedTimeline
           .map(
             (item) => `
-      <div class="timeline-item ${
-        item.type || "update"
-      } flex relative" onclick="showDetail('${item._id}')">
-        <div class="flex flex-col items-center">
-          <div class="timeline-dot ${item.type || "update"}"></div>
-        </div>
-        <div class="timeline-content ml-6 p-4 bg-gray-100 rounded-lg w-full">
-          <div class="flex justify-between items-center">
-            <span class="font-medium">${item.phase}</span>
-            <div class="flex items-center space-x-2">
-              <span class="timeline-badge badge-${
-                item.type || "update"
-              }">${getTimelineBadgeText(item.type)}</span>
-              ${
-                hasPermission
-                  ? `
-                    <button
-                      onclick="editTimelineEvent(event, '${
-                        item._id
-                      }', ${JSON.stringify(item).replace(/"/g, "&quot;")})"
-                      class="text-blue-600 hover:text-blue-800 text-sm"
-                      title="編輯"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                      </svg>
-                    </button>
-                    <button
-                      onclick="deleteTimelineEvent(event, '${item._id}')"
-                      class="text-red-600 hover:text-red-800 text-sm"
-                      title="刪除"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
-                  `
-                  : ""
-              }
+        <div class="timeline-item ${
+          item.type || "update"
+        } flex relative" onclick="showDetail('${item._id}')">
+          <div class="flex flex-col items-center">
+            <div class="timeline-dot ${item.type || "update"}"></div>
+          </div>
+          <div class="timeline-content ml-6 p-4 bg-gray-100 rounded-lg w-full">
+            <div class="flex justify-between items-center">
+              <span class="font-medium">${item.phase}</span>
+              <div class="flex items-center space-x-2">
+                <span class="timeline-badge badge-${
+                  item.type || "update"
+                }">${getTimelineBadgeText(item.type)}</span>
+                ${
+                  hasPermission
+                    ? `
+                      <button
+                        onclick="editTimelineEvent(event, '${
+                          item._id
+                        }', ${JSON.stringify(item).replace(/"/g, "&quot;")})"
+                        class="text-blue-600 hover:text-blue-800 text-sm"
+                        title="編輯"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                        </svg>
+                      </button>
+                      <button
+                        onclick="deleteTimelineEvent(event, '${item._id}')"
+                        class="text-red-600 hover:text-red-800 text-sm"
+                        title="刪除"
+                      >
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      </button>
+                    `
+                    : ""
+                }
+              </div>
+            </div>
+            <div class="text-gray-500 text-sm mt-1">
+              ${formatDisplayDate(item.date)}
+            </div>
+            <div class="mt-2 text-gray-700">
+              ${item.description}
             </div>
           </div>
-          <div class="text-gray-500 text-sm mt-1">
-            ${new Date(item.date).toLocaleString("zh-TW")}
-          </div>
-          <div class="mt-2 text-gray-700">
-            ${item.description}
-          </div>
         </div>
-      </div>
-    `
+      `
           )
           .join("");
 
@@ -957,7 +1006,7 @@
                     <h3 class="font-medium text-lg">${resource.title}</h3>
                     <div class="flex items-center space-x-2">
                       <span class="text-sm text-gray-500">
-                        ${new Date(resource.createdAt).toLocaleString("zh-TW")}
+                        ${formatDisplayDate(resource.createdAt)}
                       </span>
                       ${
                         hasPermission
@@ -1137,11 +1186,14 @@
           return;
         }
 
+        // 獲取當前台灣時間
+        const currentTaiwanTime = new Date(getCurrentTaiwanTime());
+
         editTimelineEvent(null, null, {
           event: "階段更新", // 預設事件名稱
           phase: "初步接觸",
           description: "",
-          date: new Date().toISOString(),
+          date: currentTaiwanTime.toISOString(),
           type: "create", // 確保 type 為 'create' 新增事件
           isMain: false, // 預設非主責項目
         });
@@ -1173,7 +1225,7 @@
             alert("事件日期無效。");
             return;
           }
-          const formattedDate = date.toISOString().slice(0, 16);
+          const formattedDate = formatDateToInputValue(date);
           document.getElementById("date").value = formattedDate;
         } else {
           // 新增新事件
@@ -1187,7 +1239,7 @@
             alert("事件日期無效。");
             return;
           }
-          const formattedDate = date.toISOString().slice(0, 16);
+          const formattedDate = formatDateToInputValue(date);
           document.getElementById("date").value = formattedDate;
         }
 
@@ -1217,9 +1269,21 @@
         const phase = document.getElementById("phase").value;
         const description = document.getElementById("description").value.trim();
         const dateValue = document.getElementById("date").value;
-        const date = new Date(dateValue);
 
-        if (isNaN(date.getTime())) {
+        if (!dateValue) {
+          alert("請輸入有效的日期時間。");
+          return;
+        }
+
+        // 將輸入的台灣時間轉換為 UTC ISO 字符串
+        const date = new Date(dateValue + ":00"); // 加上秒數
+
+        // 將台灣時間轉換為 UTC
+        const utcDate = new Date(
+          date.toLocaleString("en-US", { timeZone: "UTC" })
+        );
+
+        if (isNaN(utcDate.getTime())) {
           alert("請輸入有效的日期時間。");
           return;
         }
@@ -1241,7 +1305,7 @@
           event: `階段更新：${phase}`,
           description: description,
           phase: phase,
-          date: date.toISOString(),
+          date: utcDate.toISOString(),
           type: type, // 明確設置 type
         };
 
@@ -1639,10 +1703,7 @@
         }
 
         const detailContent = document.getElementById("detailContent");
-        const date = new Date(eventData.date);
-        const formattedDate = isNaN(date.getTime())
-          ? "無效的日期"
-          : date.toLocaleString("zh-TW");
+        const formattedDate = formatDisplayDate(eventData.date);
 
         detailContent.innerHTML = `
             <p><strong>執行階段：</strong> ${eventData.phase}</p>
@@ -1666,6 +1727,9 @@
         const detailModal = document.getElementById("detailModal");
         detailModal.classList.add("hidden");
       }
+
+      // 更新 UI
+      // (完整的 updateUI 函數已包含在前面)
 
       // 在 DOMContentLoaded 時添加模態框和初始化
       document.addEventListener("DOMContentLoaded", () => {

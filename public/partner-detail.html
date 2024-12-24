@@ -254,11 +254,11 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 32px;
-        height: 32px;
+        width: 40px; /* 增大按鈕尺寸以提升可視性 */
+        height: 40px;
         margin: 0 auto;
-        background-color: white;
-        border: 2px solid #e5e7eb;
+        background-color: #e5e7eb; /* Tailwind CSS 的灰色 300 */
+        border: 1px solid #e5e7eb; /* Tailwind CSS 的灰色 400 */
         border-radius: 50%;
         cursor: pointer;
         transition: all 0.3s ease;
@@ -266,7 +266,7 @@
       }
 
       .add-button:hover {
-        background-color: #2563eb;
+        background-color: #2563eb; /* Tailwind CSS 的藍色 600 */
         border-color: #2563eb;
         transform: scale(1.1);
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
@@ -274,9 +274,9 @@
       }
 
       .add-button svg {
-        width: 16px;
-        height: 16px;
-        fill: #2563eb;
+        width: 20px; /* 增大加號圖示尺寸 */
+        height: 20px;
+        fill: #e7e7e7; /* Tailwind CSS 的灰色 700 */
         transition: fill 0.3s ease;
       }
 
@@ -290,7 +290,7 @@
         bottom: -24px;
         transform: translateX(-50%);
         font-size: 0.875rem;
-        color: #6b7280;
+        color: #e7e7e7;
         white-space: nowrap;
         opacity: 0;
         transition: opacity 0.3s ease;

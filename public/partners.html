@@ -23,6 +23,7 @@
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         padding: 1rem;
         margin-bottom: 20px;
+        position: relative;
       }
 
       .nav-content {
@@ -43,6 +44,8 @@
       .nav-links {
         display: flex;
         gap: 1rem;
+        transition: max-height 0.3s ease-in-out;
+        overflow: hidden;
       }
 
       .nav-item {
@@ -50,7 +53,7 @@
         text-decoration: none;
         padding: 0.5rem 1rem;
         border-radius: 0.375rem;
-        transition: all 0.2s;
+        transition: background-color 0.2s, color 0.2s;
         cursor: pointer;
         background-color: transparent;
         border: none;
@@ -91,7 +94,7 @@
         border-radius: 0.75rem;
         padding: 1.5rem;
         box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-        transition: all 0.3s ease;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
         cursor: pointer;
         height: 100%;
         display: flex;
@@ -221,17 +224,6 @@
         color: red;
       }
 
-      /* 響應式調整 */
-      @media (max-width: 768px) {
-        .partners-grid {
-          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-        }
-
-        .partner-card {
-          padding: 1rem;
-        }
-      }
-
       /* 統一合作項目背景和文字對齊 */
       .project-container {
         display: flex;
@@ -257,7 +249,6 @@
         overflow: hidden;
         text-overflow: ellipsis;
         display: -webkit-box;
-
         -webkit-box-orient: vertical;
         text-align: left; /* 文字靠左 */
       }
@@ -272,6 +263,131 @@
           rgba(0, 0, 0, 0.1) 50%,
           rgba(0, 0, 0, 0.02) 100%
         );
+      }
+
+      /* 修改漢堡選單按鈕樣式 */
+      .hamburger {
+        display: none;
+        width: 32px;
+        height: 32px;
+        position: relative;
+        cursor: pointer;
+        background: transparent;
+        border: none;
+        padding: 0;
+        border-radius: 4px;
+        transition: background-color 0.3s;
+      }
+
+      .hamburger:hover {
+        background-color: rgba(37, 99, 235, 0.1);
+      }
+
+      .hamburger div {
+        position: absolute;
+        width: 18px;
+        height: 2px;
+        background-color: #2563eb;
+        left: 7px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .hamburger .line1 {
+        top: 11px;
+      }
+
+      .hamburger .line2 {
+        top: 15px;
+      }
+
+      .hamburger .line3 {
+        top: 19px;
+      }
+
+      /* 漢堡選單開啟時的動畫效果 */
+      .hamburger.active .line1 {
+        transform: translateY(4px) rotate(45deg);
+        background-color: #2563eb;
+      }
+
+      .hamburger.active .line2 {
+        opacity: 0;
+      }
+
+      .hamburger.active .line3 {
+        transform: translateY(-4px) rotate(-45deg);
+        background-color: #2563eb;
+      }
+
+      /* 導覽列下拉選單樣式 */
+      @media (max-width: 768px) {
+        .partners-grid {
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+
+        .partner-card {
+          padding: 1rem;
+        }
+
+        /* 隱藏導航連結，顯示漢堡選單 */
+        .nav-links {
+          display: none;
+          flex-direction: column;
+          background-color: white;
+          position: absolute;
+          top: 100%;
+          left: 0;
+          width: 100%;
+          box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+          max-height: 0;
+          overflow: hidden;
+          transition: max-height 0.3s ease-in-out,
+            opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+            transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          z-index: 1000;
+          opacity: 0;
+          visibility: hidden;
+          transform: translateY(-10px);
+        }
+
+        .nav-links.show {
+          display: flex;
+          max-height: 500px; /* 足夠的高度以顯示所有連結 */
+          opacity: 1;
+          visibility: visible;
+          transform: translateY(0);
+        }
+
+        .nav-item {
+          display: block;
+          width: 100%;
+          padding: 0.75rem 1rem;
+          margin: 0.25rem 0;
+          border-radius: 6px;
+          color: #4b5563;
+          font-weight: 500;
+          transition: all 0.2s;
+          text-align: left;
+        }
+
+        .nav-item:hover {
+          background-color: rgba(37, 99, 235, 0.1);
+          color: #2563eb;
+        }
+
+        .nav-item.add-partner {
+          background-color: #2563eb;
+          color: white;
+          margin-top: 0.5rem;
+        }
+
+        .nav-item.add-partner:hover {
+          background-color: #1d4ed8;
+        }
+
+        .hamburger {
+          display: block;
+        }
       }
     </style>
   </head>
@@ -301,6 +417,18 @@
             登出
           </button>
         </div>
+        <!-- 漢堡選單按鈕 -->
+        <button
+          class="hamburger"
+          id="hamburger"
+          aria-label="導航選單"
+          aria-expanded="false"
+          aria-controls="navLinks"
+        >
+          <div class="line1"></div>
+          <div class="line2"></div>
+          <div class="line3"></div>
+        </button>
       </div>
     </nav>
 
@@ -315,6 +443,9 @@
       async function loadPartners() {
         try {
           const response = await fetch("/api/partners");
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
           const data = await response.json();
 
           // 檢查響應格式並輸出到控制台以便調試
@@ -369,7 +500,7 @@
                 <div class="tags">
                   <span class="tag tag-project">${
                     partner.project && partner.project.subProject
-                      ? partner.project.subProject
+                      ? escapeHtml(partner.project.subProject)
                       : "未設定項目"
                   }</span>
                   ${
@@ -377,7 +508,7 @@
                       ? `<span class="tag ${getPhaseClass(
                           partner.progress.phase
                         )}">
-                          ${partner.progress.phase}
+                          ${escapeHtml(partner.progress.phase)}
                         </span>`
                       : ""
                   }
@@ -386,7 +517,9 @@
                 <!-- 國家與機構資訊 -->
                 <div class="partner-info">
                   <div class="partner-header">
-                    <span class="flag">${partner.country.flag || "🏳️"}</span>
+                    <span class="flag">${
+                      escapeHtml(partner.country.flag) || "🏳️"
+                    }</span>
                     <div>
                       <h2 class="country-name">${
                         escapeHtml(partner.country.name) || "未知國家"
@@ -481,12 +614,12 @@
           };
 
           // 檢查所有需要的元素是否都存在
-          if (!Object.values(elements).every((element) => element)) {
+          if (!Object.values(elements).every((element) => element !== null)) {
             console.error("某些導航元素未找到");
             return;
           }
 
-          if (token && user) {
+          if (token && user && user.role) {
             // 用戶已登入
             elements.registerLink.style.display = "none";
             elements.loginLink.style.display = "none";
@@ -512,9 +645,8 @@
           }
 
           // 添加按鈕點擊事件
-          const addPartnerLink = document.querySelector("#addPartnerLink");
-          if (addPartnerLink) {
-            addPartnerLink.onclick = function (e) {
+          if (elements.addPartnerLink) {
+            elements.addPartnerLink.onclick = function (e) {
               e.preventDefault();
               if (!token) {
                 alert("請先登入");
@@ -536,43 +668,55 @@
           logoutBtn.addEventListener("click", () => {
             localStorage.removeItem("token");
             localStorage.removeItem("user");
-            window.location.href = "/partners.html";
-          });
-        }
-      }
-
-      // 在页面加載時初始化
-      function initializePage() {
-        checkAuthStatus();
-        setupLogoutButton();
-        loadPartners(); // 如果需要載入合作夥伴資料
-      }
-
-      // 確保 DOM 完全加載後再執行
-      if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", initializePage);
-      } else {
-        initializePage();
-      }
-
-      // 登出功能
-      function setupLogoutButton() {
-        const logoutBtn = document.querySelector("#logoutBtn");
-        if (logoutBtn) {
-          logoutBtn.addEventListener("click", () => {
-            localStorage.removeItem("token");
-            localStorage.removeItem("user");
             checkAuthStatus();
+            // 關閉選單（如果開啟）
+            closeHamburgerMenu();
             window.location.reload();
           });
         }
       }
 
-      // 初始化
+      // 漢堡選單功能
+      function setupHamburgerMenu() {
+        const hamburger = document.getElementById("hamburger");
+        const navLinks = document.getElementById("navLinks");
+
+        if (hamburger && navLinks) {
+          hamburger.addEventListener("click", () => {
+            const isExpanded = navLinks.classList.toggle("show");
+            hamburger.classList.toggle("active");
+            hamburger.setAttribute("aria-expanded", isExpanded);
+          });
+
+          // 當使用者點擊選單中的連結時，關閉選單
+          navLinks.addEventListener("click", (e) => {
+            if (e.target.classList.contains("nav-item")) {
+              navLinks.classList.remove("show");
+              hamburger.classList.remove("active");
+              hamburger.setAttribute("aria-expanded", "false");
+            }
+          });
+        }
+      }
+
+      // 關閉漢堡選單
+      function closeHamburgerMenu() {
+        const hamburger = document.getElementById("hamburger");
+        const navLinks = document.getElementById("navLinks");
+
+        if (hamburger && navLinks && navLinks.classList.contains("show")) {
+          navLinks.classList.remove("show");
+          hamburger.classList.remove("active");
+          hamburger.setAttribute("aria-expanded", "false");
+        }
+      }
+
+      // 初始化頁面
       function initializePage() {
         loadPartners();
         checkAuthStatus();
         setupLogoutButton();
+        setupHamburgerMenu();
       }
 
       // 確保 DOM 完全加載後再執行

@@ -77,6 +77,7 @@
         position: relative;
         padding-left: 32px;
         margin-top: 24px;
+        overflow-x: hidden; /* 防止橫向捲動 */
       }
 
       .timeline-line {
@@ -350,6 +351,35 @@
       .timeline-item button {
         cursor: pointer;
       }
+
+      /* 新增的CSS */
+      .prose {
+        line-height: 1.75;
+      }
+
+      .prose p {
+        margin-bottom: 1em;
+      }
+
+      /* 漸變背景效果 */
+      .bg-gradient {
+        background: linear-gradient(to right, #f8fafc, #f1f5f9);
+      }
+
+      /* 卡片懸浮效果 */
+      .shadow-sm {
+        transition: all 0.3s ease;
+      }
+
+      .shadow-sm:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+
+      /* 移除基本資訊的懸停效果 */
+      #basicInfoCard:hover {
+        /* 無任何效果 */
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      }
     </style>
   </head>
 
@@ -376,13 +406,10 @@
     <!-- 主要內容區 -->
     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
       <!-- 基本資訊卡片 -->
-      <div class="bg-white rounded-lg shadow mb-6">
+      <div id="basicInfoCard" class="bg-white rounded-lg shadow-sm mb-6">
         <div class="p-6">
           <div id="basicInfo" class="mb-6">
             <!-- 基本資訊將由 JavaScript 動態填充 -->
-          </div>
-          <div id="progressInfo" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- 進度資訊將由 JavaScript 動態填充 -->
           </div>
         </div>
       </div>
@@ -391,7 +418,9 @@
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <!-- 時間軸 -->
         <div class="bg-white rounded-lg shadow p-6">
-          <div class="flex justify-between items-center mb-4">
+          <div
+            class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 space-y-4 sm:space-y-0 sm:space-x-6"
+          >
             <h2 class="text-xl font-semibold">進度時間軸</h2>
             <label class="flex items-center cursor-pointer">
               <span class="mr-2 text-sm text-gray-700">倒序排列</span>
@@ -406,7 +435,10 @@
               </div>
             </label>
           </div>
-          <div id="timelineContainer" class="timeline-container relative">
+          <div
+            id="timelineContainer"
+            class="timeline-container relative overflow-x-hidden"
+          >
             <div
               class="timeline-line absolute left-4 top-0 bottom-0 w-1 bg-gray-300"
             ></div>
@@ -415,7 +447,7 @@
           <!-- 新增時間軸項目按鈕 -->
           <div class="mt-4 flex justify-center">
             <button
-              class="add-button flex items-center justify-center w-10 h-10 bg-blue-500 hover:bg-blue-700 text-white rounded-full"
+              class="add-button flex items-center justify-center w-12 h-12 bg-blue-500 hover:bg-blue-700 text-white rounded-full"
               onclick="addTimelineItem()"
               title="新增時間軸項目"
             >
@@ -433,7 +465,7 @@
           <!-- 新增相關資料按鈕 -->
           <div class="mt-4 flex justify-center">
             <button
-              class="add-button flex items-center justify-center w-10 h-10 bg-blue-500 hover:bg-blue-700 text-white rounded-full"
+              class="add-button flex items-center justify-center w-12 h-12 bg-blue-500 hover:bg-blue-700 text-white rounded-full"
               onclick="addResourceItem()"
               title="新增相關資料"
             >
@@ -455,7 +487,7 @@
         <!-- 新增聯絡人按鈕 -->
         <div class="mt-4 flex justify-center">
           <button
-            class="add-button flex items-center justify-center w-10 h-10 bg-blue-500 hover:bg-blue-700 text-white rounded-full"
+            class="add-button flex items-center justify-center w-12 h-12 bg-blue-500 hover:bg-blue-700 text-white rounded-full"
             onclick="addContactItem()"
             title="新增聯絡窗口"
           >
@@ -473,7 +505,7 @@
         class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50"
       >
         <div
-          class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
+          class="relative top-20 mx-auto p-5 border w-full sm:w-96 shadow-lg rounded-md bg-white"
         >
           <div class="mt-3">
             <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">
@@ -553,7 +585,7 @@
         class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50"
       >
         <div
-          class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
+          class="relative top-20 mx-auto p-5 border w-full sm:w-96 shadow-lg rounded-md bg-white"
         >
           <div class="mt-3">
             <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">
@@ -640,7 +672,7 @@
         class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50"
       >
         <div
-          class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
+          class="relative top-20 mx-auto p-5 border w-full sm:w-96 shadow-lg rounded-md bg-white"
         >
           <div class="mt-3">
             <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">
@@ -725,7 +757,7 @@
         class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50"
       >
         <div
-          class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white"
+          class="relative top-20 mx-auto p-5 border w-full sm:w-96 shadow-lg rounded-md bg-white"
         >
           <div class="mt-3">
             <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">
@@ -796,10 +828,15 @@
       // 修改顯示日期的函數，使用台灣時間
       function formatDisplayDate(dateString) {
         const date = new Date(dateString);
-        if (isNaN(date.getTime())) {
-          return "無效的日期";
-        }
-        return formatDateToLocaleString(date);
+        const options = {
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+        };
+        return new Intl.DateTimeFormat("zh-TW", options).format(date);
       }
 
       // 檢查用戶權限
@@ -890,51 +927,68 @@
 
         // 更新基本資訊
         document.getElementById("basicInfo").innerHTML = `
-          <div class="relative">
-            <div class="absolute top-0 left-0 bg-blue-100 text-blue-800 px-3 py-1 rounded-bl-lg rounded-tr-lg text-sm font-medium">
-              ${data.project.name}
-            </div>
-            <div class="flex items-center space-x-4 pt-8">
-              <span class="text-4xl">${data.country.flag}</span>
-              <h1 class="text-2xl font-bold">${data.country.name}</h1>
-            </div>
-            <div class="mt-4">
-              <h2 class="text-xl text-blue-600 font-semibold">
-                ${data.institution.name}
-              </h2>
-              ${
-                data.institution.department
-                  ? `<p class="text-gray-600 mt-1">${data.institution.department}</p>`
-                  : ""
-              }
-            </div>
-            <div class="mt-4">
-              ${
-                data.project.content
-                  ? `<div class="mt-2">
-                    <h3 class="font-medium text-gray-700">合作項目內容</h3>
-                    <p class="mt-1 text-gray-600 whitespace-pre-line">${data.project.content}</p>
-                  </div>`
-                  : ""
-              }
-            </div>
-          </div>
-          `;
+<div class="relative bg-white rounded-lg p-6">
+  <!-- 頂部資訊列 -->
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0 sm:space-x-6">
+    <div class="flex items-center space-x-3">
+      <span class="inline-block bg-blue-100 text-blue-800 px-4 py-1 rounded-full text-sm font-medium border border-blue-200">
+        ${data.project.name}
+      </span>
+      <div class="flex items-center">
+        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getPhaseColor(
+          data.progress.phase
+        )}">
+          ${data.progress.phase}
+        </span>
+      </div>
+    </div>
+    <div class="flex items-center text-gray-500 text-sm">
+      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      ${formatDisplayDate(data.updatedAt || data.createdAt)}
+    </div>
+  </div>
 
-        // 更新進度資訊
-        document.getElementById("progressInfo").innerHTML = `
-          <div>
-            <h3 class="font-medium text-gray-700">當前階段</h3>
-            <p class="mt-1 text-lg">${data.progress.phase}</p>
-            <p class="text-sm text-gray-500 mt-1">${
-              data.progress.details || ""
-            }</p>
-          </div>
-          <div>
-            <h3 class="font-medium text-gray-700">最後更新</h3>
-            <p class="mt-1">${formatDisplayDate(data.progress.lastUpdate)}</p>
-          </div>
-        `;
+  <!-- 主要內容 -->
+  <div class="space-y-6">
+    <!-- 國家資訊 -->
+    <div class="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-4">
+      <span class="text-4xl">${data.country.flag}</span>
+      <div>
+        <h1 class="text-2xl font-bold text-gray-900">${data.country.name}</h1>
+        <p class="text-gray-500 text-sm">${data.country.code}</p>
+      </div>
+    </div>
+
+    <!-- 機構資訊 -->
+    <div class="border-l-4 border-blue-500 pl-4">
+      <h2 class="text-xl text-blue-600 font-semibold">
+        ${data.institution.name}
+      </h2>
+      ${
+        data.institution.department
+          ? `<p class="text-gray-600 mt-1">${data.institution.department}</p>`
+          : ""
+      }
+    </div>
+
+    <!-- 合作項目內容 -->
+    ${
+      data.project.content
+        ? `
+      <div class="bg-gray-50 rounded-lg p-4">
+        <h3 class="text-sm font-medium text-gray-700 uppercase tracking-wider mb-2">合作項目內容</h3>
+        <div class="prose max-w-none">
+          <p class="text-gray-600 text-sm leading-relaxed whitespace-pre-line">${data.project.content}</p>
+        </div>
+      </div>
+      `
+        : ""
+    }
+  </div>
+</div>
+`;
 
         const hasPermission = checkUserPermission();
 
@@ -948,56 +1002,56 @@
         const timelineHTML = sortedTimeline
           .map(
             (item) => `
-        <div class="timeline-item ${
-          item.type || "update"
-        } flex relative" onclick="showDetail('${item._id}')">
-          <div class="flex flex-col items-center">
-            <div class="timeline-dot ${item.type || "update"}"></div>
-          </div>
-          <div class="timeline-content ml-6 p-4 bg-gray-100 rounded-lg w-full">
-            <div class="flex justify-between items-center">
-              <span class="font-medium">${item.phase}</span>
-              <div class="flex items-center space-x-2">
-                <span class="timeline-badge badge-${
-                  item.type || "update"
-                }">${getTimelineBadgeText(item.type)}</span>
-                ${
-                  hasPermission
-                    ? `
-                      <button
-                        onclick="editTimelineEvent(event, '${
-                          item._id
-                        }', ${JSON.stringify(item).replace(/"/g, "&quot;")})"
-                        class="text-blue-600 hover:text-blue-800 text-sm"
-                        title="編輯"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                        </svg>
-                      </button>
-                      <button
-                        onclick="deleteTimelineEvent(event, '${item._id}')"
-                        class="text-red-600 hover:text-red-800 text-sm"
-                        title="刪除"
-                      >
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
-                    `
-                    : ""
-                }
+          <div class="timeline-item ${
+            item.type || "update"
+          } flex relative" onclick="showDetail('${item._id}')">
+            <div class="flex flex-col items-center">
+              <div class="timeline-dot ${item.type || "update"}"></div>
+            </div>
+            <div class="timeline-content ml-6 p-4 bg-gray-100 rounded-lg w-full">
+              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center">
+                <span class="font-medium">${item.phase}</span>
+                <div class="flex items-center space-x-2 mt-2 sm:mt-0">
+                  <span class="timeline-badge badge-${
+                    item.type || "update"
+                  }">${getTimelineBadgeText(item.type)}</span>
+                  ${
+                    hasPermission
+                      ? `
+                        <button
+                          onclick="editTimelineEvent(event, '${
+                            item._id
+                          }', ${JSON.stringify(item).replace(/"/g, "&quot;")})"
+                          class="text-blue-600 hover:text-blue-800 text-sm"
+                          title="編輯"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                          </svg>
+                        </button>
+                        <button
+                          onclick="deleteTimelineEvent(event, '${item._id}')"
+                          class="text-red-600 hover:text-red-800 text-sm"
+                          title="刪除"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        </button>
+                      `
+                      : ""
+                  }
+                </div>
+              </div>
+              <div class="text-gray-500 text-sm mt-1">
+                ${formatDisplayDate(item.date)}
+              </div>
+              <div class="mt-2 text-gray-700">
+                ${item.description}
               </div>
             </div>
-            <div class="text-gray-500 text-sm mt-1">
-              ${formatDisplayDate(item.date)}
-            </div>
-            <div class="mt-2 text-gray-700">
-              ${item.description}
-            </div>
           </div>
-        </div>
-      `
+        `
           )
           .join("");
 
@@ -1011,8 +1065,8 @@
           .sort((a, b) => a.order - b.order)
           .map(
             (resource) => `
-                <div class="border rounded-lg p-4">
-                  <div class="flex justify-between items-center mb-2">
+                <div class="border rounded-lg p-4 space-y-2">
+                  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
                     <h3 class="font-medium text-lg">${resource.title}</h3>
                     <div class="flex items-center space-x-2">
                       <span class="text-sm text-gray-500">
@@ -1031,7 +1085,6 @@
                               class="text-blue-600 hover:text-blue-800 text-sm"
                               title="編輯"
                             >
-                              <!-- 編輯圖示 -->
                               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                               </svg>
@@ -1041,7 +1094,6 @@
                               class="text-red-600 hover:text-red-800 text-sm"
                               title="刪除"
                             >
-                              <!-- 刪除圖示 -->
                               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                               </svg>
@@ -1080,7 +1132,7 @@
         const contactsHTML = (data.contacts || [])
           .map(
             (contact) => `
-                <div class="border rounded-lg p-4">
+                <div class="border rounded-lg p-4 space-y-2">
                   <h3 class="font-medium">${contact.name}</h3>
                   <p class="text-gray-600 text-sm mt-1">${contact.title}</p>
                   <div class="mt-2 space-y-1">
@@ -1113,7 +1165,6 @@
                             class="text-blue-600 hover:text-blue-800 text-sm"
                             title="編輯"
                           >
-                            <!-- 編輯圖示 -->
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
                             </svg>
@@ -1123,7 +1174,6 @@
                             class="text-red-600 hover:text-red-800 text-sm"
                             title="刪除"
                           >
-                            <!-- 刪除圖示 -->
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
@@ -1173,6 +1223,7 @@
           return {
             phase: "初步接觸",
             date: new Date().toISOString(),
+            description: "",
           };
         }
 
@@ -1734,9 +1785,6 @@
         detailModal.classList.add("hidden");
       }
 
-      // 更新 UI
-      // (完整的 updateUI 函數已包含在前面)
-
       // 在 DOMContentLoaded 時添加模態框和初始化
       document.addEventListener("DOMContentLoaded", () => {
         // 初始化頁面數據
@@ -1750,6 +1798,21 @@
           updateUI(window.partnerData); // 重新更新 UI 以反映排列順序
         });
       });
+
+      // 新增這個輔助函數到 script 中
+      function getPhaseColor(phase) {
+        const colors = {
+          初步接觸: "bg-purple-100 text-purple-800",
+          確認合作項目: "bg-blue-100 text-blue-800",
+          場地勘查: "bg-yellow-100 text-yellow-800",
+          設備部署: "bg-orange-100 text-orange-800",
+          數據收集: "bg-green-100 text-green-800",
+          分析與優化: "bg-indigo-100 text-indigo-800",
+          完成階段: "bg-gray-100 text-gray-800",
+        };
+
+        return colors[phase] || "bg-gray-100 text-gray-800";
+      }
     </script>
   </body>
 </html>

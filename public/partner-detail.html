@@ -300,6 +300,7 @@
         >
           <!-- 聯絡人資訊將由 JavaScript 動態填充 -->
         </div>
+        <!-- 新增聯絡人按鈕將由 JavaScript 動態添加 -->
       </div>
     </div>
 
@@ -389,9 +390,9 @@
               <h1 class="text-2xl font-bold">${data.country.name}</h1>
             </div>
             <div class="mt-4">
-              <h2 class="text-xl text-blue-600 font-semibold">${
-                data.institution.name
-              }</h2>
+              <h2 class="text-xl text-blue-600 font-semibold">
+                ${data.institution.name}
+              </h2>
               ${
                 data.institution.department
                   ? `<p class="text-gray-600 mt-1">${data.institution.department}</p>`
@@ -566,7 +567,7 @@
         }
 
         // 更新聯絡人資訊
-        const contactsHTML = data.contacts
+        const contactsHTML = (data.contacts || [])
           .map(
             (contact) => `
             <div class="border rounded-lg p-4">
@@ -588,11 +589,59 @@
                     : ""
                 }
               </div>
+              ${
+                hasPermission
+                  ? `
+                <div class="flex justify-end mt-4 space-x-2">
+                  <button
+                    onclick="editContact('${contact._id}', ${JSON.stringify(
+                      contact
+                    ).replace(/"/g, "&quot;")})"
+                    class="text-blue-600 hover:text-blue-800 text-sm"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                    </svg>
+                  </button>
+                  <button
+                    onclick="deleteContact('${contact._id}')"
+                    class="text-red-600 hover:text-red-800 text-sm"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                </div>
+              `
+                  : ""
+              }
             </div>
           `
           )
           .join("");
-        document.getElementById("contactsContainer").innerHTML = contactsHTML;
+
+        const contactsContainer = document.getElementById("contactsContainer");
+        contactsContainer.innerHTML =
+          contactsHTML ||
+          '<p class="text-gray-500 text-center">尚無聯絡窗口資訊</p>';
+
+        if (hasPermission) {
+          contactsContainer.insertAdjacentHTML(
+            "beforeend",
+            `
+            <div class="add-button-container">
+              <button class="add-button" onclick="addContactItem()">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+                  <path d="M12 4a1 1 0 0 1 1 1v6h6a1 1 0 1 1 0 2h-6v6a1 1 0 1 1-2 0v-6H5a1 1 0 1 1 0-2h6V5a1 1 0 0 1 1-1z"/>
+                </svg>
+              </button>
+              <span class="add-button-label">新增聯絡窗口</span>
+            </div>
+          `
+          );
+        }
+
+        // 更新聯絡人資訊後可能需要調整其他區塊
       }
 
       // 輔助函數：獲取時間軸徽章文字
@@ -931,6 +980,167 @@
         }
       }
 
+      // 聯絡窗口相關函數
+      async function addContactItem() {
+        if (!checkUserPermission()) {
+          alert("您沒有權限執行此操作");
+          return;
+        }
+
+        editContact(null, {
+          name: "",
+          title: "",
+          email: "",
+          phone: "",
+        });
+
+        const form = document.getElementById("editContactForm");
+        form.onsubmit = async (e) => {
+          e.preventDefault();
+          const partnerId = window.partnerData._id;
+          const token = localStorage.getItem("token");
+
+          const newContact = {
+            name: document.getElementById("contactName").value,
+            title: document.getElementById("contactTitle").value,
+            email: document.getElementById("contactEmail").value,
+            phone: document.getElementById("contactPhone").value,
+          };
+
+          try {
+            const response = await fetch(
+              `/api/partners/${partnerId}/contacts`,
+              {
+                method: "POST",
+                headers: {
+                  Authorization: `Bearer ${token}`,
+                  "Content-Type": "application/json",
+                },
+                body: JSON.stringify(newContact),
+              }
+            );
+
+            if (!response.ok) {
+              throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            closeContactModal();
+            await loadPartnerData();
+          } catch (error) {
+            console.error("Error adding contact:", error);
+            alert("新增聯絡人時發生錯誤：" + error.message);
+          }
+        };
+      }
+
+      function editContact(contactId, contactData) {
+        if (!checkUserPermission()) {
+          alert("您沒有權限執行此操作");
+          return;
+        }
+
+        const modal = document.getElementById("contactModal");
+        const form = document.getElementById("editContactForm");
+
+        document.getElementById("contactId").value = contactId;
+        document.getElementById("contactName").value = contactData.name;
+        document.getElementById("contactTitle").value = contactData.title;
+        document.getElementById("contactEmail").value = contactData.email;
+        document.getElementById("contactPhone").value = contactData.phone || "";
+
+        modal.classList.remove("hidden");
+
+        form.onsubmit = async (e) => {
+          e.preventDefault();
+          await updateContact();
+        };
+      }
+
+      function closeContactModal() {
+        const modal = document.getElementById("contactModal");
+        modal.classList.add("hidden");
+      }
+
+      async function updateContact() {
+        if (!checkUserPermission()) {
+          alert("您沒有權限執行此操作");
+          return;
+        }
+
+        const contactId = document.getElementById("contactId").value;
+        const partnerId = window.partnerData._id;
+        const token = localStorage.getItem("token");
+
+        const updatedContact = {
+          name: document.getElementById("contactName").value,
+          title: document.getElementById("contactTitle").value,
+          email: document.getElementById("contactEmail").value,
+          phone: document.getElementById("contactPhone").value,
+        };
+
+        try {
+          const response = await fetch(
+            contactId
+              ? `/api/partners/${partnerId}/contacts/${contactId}`
+              : `/api/partners/${partnerId}/contacts`,
+            {
+              method: contactId ? "PUT" : "POST",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(updatedContact),
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          closeContactModal();
+          await loadPartnerData();
+        } catch (error) {
+          console.error("Error updating contact:", error);
+          alert("更新聯絡人時發生錯誤：" + error.message);
+        }
+      }
+
+      async function deleteContact(contactId) {
+        if (!checkUserPermission()) {
+          alert("您沒有權限執行此操作");
+          return;
+        }
+
+        if (!confirm("確定要刪除此聯絡人嗎？")) {
+          return;
+        }
+
+        const token = localStorage.getItem("token");
+        const partnerId = window.partnerData._id;
+
+        try {
+          const response = await fetch(
+            `/api/partners/${partnerId}/contacts/${contactId}`,
+            {
+              method: "DELETE",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+            }
+          );
+
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+
+          await loadPartnerData();
+        } catch (error) {
+          console.error("Error deleting contact:", error);
+          alert("刪除聯絡人時發生錯誤");
+        }
+      }
+
       // 在 DOMContentLoaded 時添加模態框和初始化
       document.addEventListener("DOMContentLoaded", () => {
         // 首先添加模態框 HTML
@@ -1011,12 +1221,45 @@
         </div>
       </div>
     </div>
+
+    <!-- 聯絡窗口編輯模態框 -->
+    <div id="contactModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
+      <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+          <h3 class="text-lg font-medium leading-6 text-gray-900 mb-4">編輯聯絡窗口</h3>
+          <form id="editContactForm">
+            <input type="hidden" id="contactId">
+            <div class="mb-4">
+              <label class="block text-gray-700 text-sm font-bold mb-2" for="contactName">姓名</label>
+              <input type="text" id="contactName" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+            </div>
+            <div class="mb-4">
+              <label class="block text-gray-700 text-sm font-bold mb-2" for="contactTitle">職稱</label>
+              <input type="text" id="contactTitle" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+            </div>
+            <div class="mb-4">
+              <label class="block text-gray-700 text-sm font-bold mb-2" for="contactEmail">Email</label>
+              <input type="email" id="contactEmail" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" required>
+            </div>
+            <div class="mb-6">
+              <label class="block text-gray-700 text-sm font-bold mb-2" for="contactPhone">電話（選填）</label>
+              <input type="tel" id="contactPhone" class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">
+            </div>
+            <div class="flex items-center justify-between">
+              <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">儲存</button>
+              <button type="button" onclick="closeContactModal()" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">取消</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
   `
         );
 
         // 然後添加事件監聽器
         const editModal = document.getElementById("editModal");
         const resourceModal = document.getElementById("resourceModal");
+        const contactModal = document.getElementById("contactModal"); // 新增聯絡窗口模態框
 
         if (editModal) {
           editModal.addEventListener("click", (e) => {
@@ -1030,6 +1273,15 @@
           resourceModal.addEventListener("click", (e) => {
             if (e.target.id === "resourceModal") {
               closeResourceModal();
+            }
+          });
+        }
+
+        if (contactModal) {
+          // 新增聯絡窗口模態框事件監聽
+          contactModal.addEventListener("click", (e) => {
+            if (e.target.id === "contactModal") {
+              closeContactModal();
             }
           });
         }

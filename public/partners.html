@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>國際合作夥伴</title>
     <style>
+      /* Reset 與基本樣式 */
       * {
         margin: 0;
         padding: 0;
@@ -17,6 +18,7 @@
         padding: 0;
       }
 
+      /* 導覽列樣式 */
       .nav-container {
         background-color: white;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -51,6 +53,9 @@
         border-radius: 0.375rem;
         transition: all 0.2s;
         cursor: pointer;
+        background-color: transparent;
+        border: none;
+        font: inherit;
       }
 
       .nav-item:hover {
@@ -66,32 +71,41 @@
         background-color: #1d4ed8;
       }
 
+      /* 主要內容容器 */
       .container {
         max-width: 1200px;
         margin: 0 auto;
         padding: 20px;
       }
 
+      /* 合作夥伴格子布局 */
       .partners-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
         gap: 24px;
+        padding: 1rem;
       }
 
+      /* 合作夥伴卡片樣式 */
       .partner-card {
         background: white;
-        border-radius: 8px;
-        padding: 24px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        transition: transform 0.3s ease;
+        border-radius: 0.75rem;
+        padding: 1.5rem;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
         cursor: pointer;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
       }
 
       .partner-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       }
 
+      /* 合作夥伴卡片頭部 */
       .partner-header {
         display: flex;
         align-items: center;
@@ -119,20 +133,81 @@
         margin-bottom: 16px;
       }
 
-      .phase-section {
-        border-top: 1px solid #eee;
-        padding-top: 16px;
-        margin-top: 16px;
+      /* 標籤樣式 */
+      .tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 16px;
       }
 
-      .phase-label {
-        font-size: 14px;
-        color: #666;
-        margin-bottom: 4px;
-      }
-
-      .phase-value {
+      .tag {
+        background-color: #e0f2fe;
+        color: #1e3a8a;
+        padding: 4px 8px;
+        border-radius: 9999px;
+        font-size: 12px;
         font-weight: 500;
+      }
+
+      /* 階段標籤顏色 */
+      .phase-initial-contact {
+        background-color: #f3e8ff;
+        color: #7c3aed;
+      }
+
+      .phase-confirm-project {
+        background-color: #dbeafe;
+        color: #3b82f6;
+      }
+
+      .phase-site-survey {
+        background-color: #fef9c3;
+        color: #f59e0b;
+      }
+
+      .phase-equipment-deployment {
+        background-color: #fde68a;
+        color: #ea580c;
+      }
+
+      .phase-data-collection {
+        background-color: #dcfce7;
+        color: #16a34a;
+      }
+
+      .phase-analysis-optimization {
+        background-color: #ede9fe;
+        color: #8b5cf6;
+      }
+
+      .phase-completion {
+        background-color: #f3f4f6;
+        color: #4b5563;
+      }
+
+      /* 無合作夥伴與錯誤訊息 */
+      .no-partners,
+      .error-message {
+        text-align: center;
+        color: #666;
+        padding: 20px;
+        font-size: 1rem;
+      }
+
+      .error-message {
+        color: red;
+      }
+
+      /* 響應式調整 */
+      @media (max-width: 768px) {
+        .partners-grid {
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        }
+
+        .partner-card {
+          padding: 1rem;
+        }
       }
     </style>
   </head>
@@ -224,27 +299,67 @@
             }
 
             return `
-        <div class="partner-card" onclick="location.href='/partner-detail.html?id=${
-          partner._id
-        }'">
-          <div class="partner-header">
-            <span class="flag">${partner.country.flag || "🏳️"}</span>
-            <h2 class="country-name">${partner.country.name || "未知國家"}</h2>
-          </div>
-          <p class="institution">${partner.institution.name || "未知機構"}</p>
-          ${
-            partner.institution.department
-              ? `<p class="details">${partner.institution.department}</p>`
-              : ""
-          }
-          <div class="phase-section">
-            <p class="phase-label">執行階段</p>
-            <p class="phase-value">${partner.progress.phase || "未設定"}</p>
-          </div>
-        </div>
-      `;
+              <div class="partner-card" onclick="location.href='/partner-detail.html?id=${
+                partner._id
+              }'">
+                <!-- 標籤列 -->
+                <div class="tags">
+                  <span class="tag">${
+                    partner.project && partner.project.name
+                      ? partner.project.name
+                      : "未設定"
+                  }</span>
+                  ${
+                    partner.progress.phase
+                      ? `<span class="tag ${getPhaseClass(
+                          partner.progress.phase
+                        )}">
+                          ${partner.progress.phase}
+                        </span>`
+                      : ""
+                  }
+                </div>
+
+                <!-- 國家與機構資訊 -->
+                <div class="partner-info">
+                  <div class="partner-header">
+                    <span class="flag">${partner.country.flag || "🏳️"}</span>
+                    <div>
+                      <h2 class="country-name">${
+                        partner.country.name || "未知國家"
+                      }</h2>
+                      <p class="details">${partner.country.code || ""}</p>
+                    </div>
+                  </div>
+
+                  <div class="institution">
+                    ${partner.institution.name || "未知機構"}
+                  </div>
+                  ${
+                    partner.institution.department
+                      ? `<div class="details">${partner.institution.department}</div>`
+                      : ""
+                  }
+                </div>
+              </div>
+            `;
           })
           .join("");
+      }
+
+      // 根據階段返回對應的 CSS 類別
+      function getPhaseClass(phase) {
+        const phases = {
+          初步接觸: "phase-initial-contact",
+          確認合作項目: "phase-confirm-project",
+          場地勘查: "phase-site-survey",
+          設備部署: "phase-equipment-deployment",
+          數據收集: "phase-data-collection",
+          分析與優化: "phase-analysis-optimization",
+          完成階段: "phase-completion",
+        };
+
+        return phases[phase] || "phase-completion";
       }
 
       // 檢查登入狀態

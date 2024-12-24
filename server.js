@@ -15,22 +15,26 @@ const partnerRoutes = require("./routes/partners");
 const app = express();
 
 // 定義允許的域名
-const allowedOrigins = [
-  "http://localhost:3000",
-  "http://localhost:5000",
-  "https://global-partners-nchu.onrender.com",
-];
+let allowedOrigins;
+
+if (process.env.NODE_ENV === "development") {
+  // 在開發環境只允許 localhost
+  allowedOrigins = ["http://localhost:3000", "http://localhost:5000"];
+} else {
+  // 在正式環境才允許 Render 網域
+  allowedOrigins = [
+    "http://localhost:3000",
+    "http://localhost:5000",
+    "https://global-partners-nchu.onrender.com",
+  ];
+}
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        console.log("Blocked by CORS:", origin);
-        callback(new Error("Not allowed by CORS"));
-      }
-    },
+    origin: [
+      "http://localhost:5000",
+      "https://global-partners-nchu.onrender.com",
+    ],
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],

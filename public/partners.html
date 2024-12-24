@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>國際合作夥伴</title>
     <style>
-      /* ---- 第一段 CSS ---- */
+      /* ---- 基本重置與全域樣式 ---- */
       * {
         margin: 0;
         padding: 0;
@@ -14,16 +14,35 @@
 
       body {
         font-family: "Arial", sans-serif;
-        background-color: #f5f5f5;
+        background: linear-gradient(135deg, #f6f8fc 0%, #e9eef6 100%);
+        background-attachment: fixed;
+        position: relative;
         padding: 0;
       }
 
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* ---- 導覽列樣式 ---- */
       .nav-container {
-        background-color: white;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.8);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
+          0 2px 4px -1px rgba(0, 0, 0, 0.03);
         padding: 1rem;
         margin-bottom: 20px;
         position: relative;
+        z-index: 9999; /* 確保導覽列位於最上層 */
       }
 
       .nav-content {
@@ -73,6 +92,61 @@
         background-color: #1d4ed8;
       }
 
+      /* ---- 漢堡選單按鈕樣式 ---- */
+      .hamburger {
+        display: none;
+        width: 32px;
+        height: 32px;
+        position: relative;
+        cursor: pointer;
+        background: transparent;
+        border: none;
+        padding: 0;
+        border-radius: 4px;
+        transition: background-color 0.3s;
+      }
+
+      .hamburger:hover {
+        background-color: rgba(37, 99, 235, 0.1);
+      }
+
+      .hamburger div {
+        position: absolute;
+        width: 18px;
+        height: 2px;
+        background-color: #2563eb;
+        left: 7px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      .hamburger .line1 {
+        top: 11px;
+      }
+
+      .hamburger .line2 {
+        top: 15px;
+      }
+
+      .hamburger .line3 {
+        top: 19px;
+      }
+
+      /* 漢堡選單開啟時的動畫效果 */
+      .hamburger.active .line1 {
+        transform: translateY(4px) rotate(45deg);
+        background-color: #2563eb;
+      }
+
+      .hamburger.active .line2 {
+        opacity: 0;
+      }
+
+      .hamburger.active .line3 {
+        transform: translateY(-4px) rotate(-45deg);
+        background-color: #2563eb;
+      }
+
+      /* ---- 合作夥伴區塊樣式 ---- */
       .container {
         max-width: 1200px;
         margin: 0 auto;
@@ -87,10 +161,14 @@
       }
 
       .partner-card {
-        background: white;
+        background: linear-gradient(145deg, #ffffff, #f8faff);
+        border: 1px solid rgba(255, 255, 255, 0.8);
         border-radius: 0.75rem;
         padding: 1.5rem;
-        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+          0 2px 4px -1px rgba(0, 0, 0, 0.06),
+          inset 0 2px 4px rgba(255, 255, 255, 0.5);
+        backdrop-filter: blur(8px);
         transition: transform 0.3s ease, box-shadow 0.3s ease;
         cursor: pointer;
         height: 100%;
@@ -103,7 +181,10 @@
 
       .partner-card:hover {
         transform: translateY(-4px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        box-shadow: 0 12px 20px -6px rgba(0, 0, 0, 0.15),
+          0 4px 8px -4px rgba(0, 0, 0, 0.08),
+          inset 0 2px 4px rgba(255, 255, 255, 0.5);
+        border: 1px solid rgba(255, 255, 255, 0.9);
       }
 
       /* 標籤列 */
@@ -121,6 +202,9 @@
         border-radius: 9999px;
         font-size: 14px;
         font-weight: 500;
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        backdrop-filter: blur(4px);
       }
 
       .tag-project {
@@ -206,6 +290,11 @@
         color: #374151;
         margin-bottom: 16px;
         text-align: left; /* 文字靠左 */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2; /* 限制顯示兩行 */
       }
 
       /* 無合作夥伴與錯誤訊息 */
@@ -227,26 +316,16 @@
         align-items: flex-start;
         gap: 12px;
         padding: 12px 16px;
-        background-color: #f9fafb; /* 統一背景色 */
+        background: rgba(249, 250, 251, 0.8);
         border-radius: 0 0 8px 8px;
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        backdrop-filter: blur(4px);
+        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
       }
 
       .project-content {
         flex-grow: 1;
         min-width: 0; /* 確保文字會正確換行 */
-        text-align: left; /* 文字靠左 */
-      }
-
-      .project-name {
-        margin: 0;
-        font-size: 16px;
-        font-weight: 500;
-        color: #2c3e50;
-        line-height: 1.4;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        display: -webkit-box;
-        -webkit-box-orient: vertical;
         text-align: left; /* 文字靠左 */
       }
 
@@ -256,67 +335,13 @@
         margin: 12px 0;
         background: linear-gradient(
           to right,
-          rgba(0, 0, 0, 0.02) 0%,
-          rgba(0, 0, 0, 0.1) 50%,
-          rgba(0, 0, 0, 0.02) 100%
+          transparent,
+          rgba(0, 0, 0, 0.08),
+          transparent
         );
       }
 
-      /* 漢堡選單按鈕樣式 */
-      .hamburger {
-        display: none;
-        width: 32px;
-        height: 32px;
-        position: relative;
-        cursor: pointer;
-        background: transparent;
-        border: none;
-        padding: 0;
-        border-radius: 4px;
-        transition: background-color 0.3s;
-      }
-
-      .hamburger:hover {
-        background-color: rgba(37, 99, 235, 0.1);
-      }
-
-      .hamburger div {
-        position: absolute;
-        width: 18px;
-        height: 2px;
-        background-color: #2563eb;
-        left: 7px;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-      }
-
-      .hamburger .line1 {
-        top: 11px;
-      }
-
-      .hamburger .line2 {
-        top: 15px;
-      }
-
-      .hamburger .line3 {
-        top: 19px;
-      }
-
-      /* 漢堡選單開啟時的動畫效果 */
-      .hamburger.active .line1 {
-        transform: translateY(4px) rotate(45deg);
-        background-color: #2563eb;
-      }
-
-      .hamburger.active .line2 {
-        opacity: 0;
-      }
-
-      .hamburger.active .line3 {
-        transform: translateY(-4px) rotate(-45deg);
-        background-color: #2563eb;
-      }
-
-      /* 導覽列下拉選單樣式 */
+      /* ---- 響應式樣式 ---- */
       @media (max-width: 768px) {
         .partners-grid {
           grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -385,78 +410,6 @@
           display: block;
         }
       }
-
-      /* ---- 第二段 CSS ---- */
-      /* 網頁背景 */
-      body {
-        background: linear-gradient(135deg, #f6f8fc 0%, #e9eef6 100%);
-        background-attachment: fixed;
-        position: relative;
-      }
-
-      body::before {
-        content: "";
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23000000' fill-opacity='0.02'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-        pointer-events: none;
-        z-index: 0;
-      }
-
-      /* 卡片樣式優化（覆蓋之前的 .partner-card 與 hover） */
-      .partner-card {
-        background: linear-gradient(145deg, #ffffff, #f8faff);
-        border: 1px solid rgba(255, 255, 255, 0.8);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
-          0 2px 4px -1px rgba(0, 0, 0, 0.06),
-          inset 0 2px 4px rgba(255, 255, 255, 0.5);
-        backdrop-filter: blur(8px);
-      }
-
-      .partner-card:hover {
-        transform: translateY(-4px);
-        box-shadow: 0 12px 20px -6px rgba(0, 0, 0, 0.15),
-          0 4px 8px -4px rgba(0, 0, 0, 0.08),
-          inset 0 2px 4px rgba(255, 255, 255, 0.5);
-        border: 1px solid rgba(255, 255, 255, 0.9);
-      }
-
-      /* 導航欄優化（覆蓋之前的 .nav-container） */
-      .nav-container {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(10px);
-        border-bottom: 1px solid rgba(255, 255, 255, 0.8);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
-          0 2px 4px -1px rgba(0, 0, 0, 0.03);
-      }
-
-      /* 標籤樣式優化（在原有 .tag 基礎上加上更立體的感覺） */
-      .tag {
-        border: 1px solid rgba(255, 255, 255, 0.6);
-        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-        backdrop-filter: blur(4px);
-      }
-
-      /* 項目容器優化（覆蓋 .project-container） */
-      .project-container {
-        background: rgba(249, 250, 251, 0.8);
-        backdrop-filter: blur(4px);
-        border: 1px solid rgba(255, 255, 255, 0.6);
-        box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.05);
-      }
-
-      /* 分隔線優化（覆蓋 .divider） */
-      .divider {
-        background: linear-gradient(
-          to right,
-          transparent,
-          rgba(0, 0, 0, 0.08),
-          transparent
-        );
-      }
     </style>
   </head>
   <body>
@@ -464,14 +417,7 @@
       <div class="nav-content">
         <a href="/" class="nav-logo">國際合作夥伴</a>
         <div class="nav-links" id="navLinks">
-          <a
-            href="/partner-management.html"
-            class="nav-item add-partner"
-            id="addPartnerLink"
-            style="display: none"
-            >新增合作夥伴</a
-          >
-          <a href="/register.html" class="nav-item" id="registerLink">註冊</a>
+          <!-- 已移除註冊連結 -->
           <a href="/login.html" class="nav-item" id="loginLink">登入</a>
 
           <a
@@ -480,6 +426,13 @@
             id="dashboardLink"
             style="display: none"
             >管理系統</a
+          >
+          <a
+            href="/partner-management.html"
+            class="nav-item add-partner"
+            id="addPartnerLink"
+            style="display: none"
+            >新增合作夥伴</a
           >
           <button id="logoutBtn" class="nav-item" style="display: none">
             登出
@@ -519,7 +472,7 @@
           // 檢查響應格式並輸出到控制台以便調試
           console.log("API Response:", data);
 
-          // 確保 data 是數組
+          // 確保 data 是陣列
           const partners = Array.isArray(data)
             ? data
             : Array.isArray(data.partners)
@@ -674,7 +627,6 @@
 
           // 使用 querySelector 並確保元素存在
           const elements = {
-            registerLink: document.querySelector("#registerLink"),
             loginLink: document.querySelector("#loginLink"),
             dashboardLink: document.querySelector("#dashboardLink"),
             logoutBtn: document.querySelector("#logoutBtn"),
@@ -689,7 +641,6 @@
 
           if (token && user && user.role) {
             // 用戶已登入
-            elements.registerLink.style.display = "none";
             elements.loginLink.style.display = "none";
             elements.logoutBtn.style.display = "inline-block";
 
@@ -705,7 +656,6 @@
               user.role === "admin" ? "inline-block" : "none";
           } else {
             // 用戶未登入
-            elements.registerLink.style.display = "inline-block";
             elements.loginLink.style.display = "inline-block";
             elements.dashboardLink.style.display = "none";
             elements.addPartnerLink.style.display = "none";

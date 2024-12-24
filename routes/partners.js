@@ -1,3 +1,5 @@
+// routes/partners.js
+
 const express = require("express");
 const router = express.Router();
 const Partner = require("../models/Partner");
@@ -10,7 +12,7 @@ async function updateProgressFromTimeline(partner) {
     partner.progress = {
       phase: "初步接觸",
       lastUpdate: new Date(),
-      details: "初始階段", // 可選
+      details: "初始階段",
     };
     return;
   }
@@ -27,7 +29,7 @@ async function updateProgressFromTimeline(partner) {
 
   partner.progress.phase = sortedTimeline[0].phase;
   partner.progress.lastUpdate = new Date(sortedTimeline[0].date);
-  partner.progress.details = sortedTimeline[0].description || ""; // 可選
+  partner.progress.details = sortedTimeline[0].description || "";
 }
 
 // 取得國家列表 (放在最前面避免與 :id 路由衝突)
@@ -45,6 +47,7 @@ router.get("/utils/countries", auth, async (req, res) => {
     };
     res.json(countries);
   } catch (error) {
+    console.error("獲取國家列表失敗:", error);
     res.status(500).json({ message: "獲取國家列表失敗", error: error.message });
   }
 });
@@ -74,6 +77,7 @@ router.get("/", async (req, res) => {
       },
     });
   } catch (error) {
+    console.error("獲取合作夥伴列表失敗:", error);
     res.status(500).json({
       message: "獲取合作夥伴列表失敗",
       error: error.message,
@@ -88,11 +92,16 @@ router.post("/", auth, isAdmin, async (req, res) => {
       return res.status(401).json({ message: "使用者驗證失敗" });
     }
 
+    // console.log("接收到的新增合作夥伴資料:", req.body); // 日誌記錄
+
     const initialTimeline = {
       date: new Date(),
       event: "建立合作夥伴",
       description: `初始階段：${req.body.progress.phase}`,
       type: "create",
+      phase: req.body.progress.phase,
+      createdBy: req.user.userId,
+      updatedBy: req.user.userId,
     };
 
     const partner = new Partner({
@@ -105,6 +114,7 @@ router.post("/", auth, isAdmin, async (req, res) => {
     const newPartner = await partner.save();
     res.status(201).json(newPartner);
   } catch (error) {
+    console.error("新增合作夥伴失敗:", error);
     if (error.name === "ValidationError") {
       return res.status(400).json({
         message: "資料驗證失敗",
@@ -136,17 +146,8 @@ router.post("/:partnerId/timeline", auth, isAdmin, async (req, res) => {
 
     // 檢查是否已存在相同階段的事件
     const existingPhaseEvent = partner.timeline.find(
-      (event) => event.phase === phase
+      (evt) => evt.phase === phase
     );
-
-    // 確保 partner.progress 物件存在
-    if (!partner.progress) {
-      partner.progress = {
-        phase: phase,
-        lastUpdate: new Date(date),
-        details: description,
-      };
-    }
 
     // 判斷 type：如果已存在同階段事件則為 update，否則為 create
     const eventType = existingPhaseEvent ? "update" : "create";
@@ -176,7 +177,7 @@ router.post("/:partnerId/timeline", auth, isAdmin, async (req, res) => {
       progress: updatedPartner.progress,
     });
   } catch (error) {
-    console.error("Create timeline error:", error);
+    console.error("新增時間軸事件失敗:", error);
     if (error.name === "ValidationError") {
       return res.status(400).json({
         message: "資料驗證失敗",
@@ -202,33 +203,33 @@ router.put("/:partnerId/timeline/:eventId", auth, isAdmin, async (req, res) => {
     }
 
     const timelineIndex = partner.timeline.findIndex(
-      (event) => event._id.toString() === eventId
+      (evt) => evt._id.toString() === eventId
     );
 
     if (timelineIndex === -1) {
       return res.status(404).json({ message: "找不到此時間軸事件" });
     }
 
-    const originalEventId = partner.timeline[timelineIndex]._id;
-    const currentType = partner.timeline[timelineIndex].type;
-    const originalPhase = partner.timeline[timelineIndex].phase;
+    const originalTimelineEvent = partner.timeline[timelineIndex];
+    const originalPhase = originalTimelineEvent.phase;
 
     // 檢查是否已存在其他相同階段的事件（除了當前事件）
     const existingPhaseEvent = partner.timeline.find(
-      (event) => event.phase === phase && event._id.toString() !== eventId
+      (evt) => evt.phase === phase && evt._id.toString() !== eventId
     );
 
     // 判斷 type：
     // 1. 如果是更改階段，且新階段已存在其他事件，則為 update
     // 2. 如果是更改階段，且新階段不存在其他事件，則為 create
     // 3. 如果沒有更改階段，保持原有的 type
-    let newType = currentType;
+    let newType = originalTimelineEvent.type;
     if (phase !== originalPhase) {
       newType = existingPhaseEvent ? "update" : "create";
     }
 
+    // 更新時間軸事件
     partner.timeline[timelineIndex] = {
-      _id: originalEventId,
+      ...originalTimelineEvent.toObject(),
       event,
       description,
       phase,
@@ -236,8 +237,6 @@ router.put("/:partnerId/timeline/:eventId", auth, isAdmin, async (req, res) => {
       updatedAt: new Date(),
       updatedBy: req.user.userId,
       type: newType,
-      createdAt: partner.timeline[timelineIndex].createdAt,
-      createdBy: partner.timeline[timelineIndex].createdBy,
     };
 
     // 更新進度資訊
@@ -251,7 +250,13 @@ router.put("/:partnerId/timeline/:eventId", auth, isAdmin, async (req, res) => {
       progress: updatedPartner.progress,
     });
   } catch (error) {
-    console.error("Update timeline error:", error);
+    console.error("更新時間軸事件失敗:", error);
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        message: "資料驗證失敗",
+        details: Object.values(error.errors).map((err) => err.message),
+      });
+    }
     res.status(500).json({
       message: "更新時間軸事件失敗",
       error: error.message,
@@ -278,7 +283,7 @@ router.delete(
       }
 
       const timelineIndex = partner.timeline.findIndex(
-        (event) => event._id.toString() === eventId
+        (evt) => evt._id.toString() === eventId
       );
 
       if (timelineIndex === -1) {
@@ -299,7 +304,7 @@ router.delete(
         progress: updatedPartner.progress,
       });
     } catch (error) {
-      console.error("Delete timeline error:", error);
+      console.error("刪除時間軸事件失敗:", error);
       if (error.name === "CastError") {
         return res.status(400).json({ message: "無效的ID格式" });
       }
@@ -317,6 +322,13 @@ router.put("/:partnerId/progress", auth, isAdmin, async (req, res) => {
     const { partnerId } = req.params;
     const { phase, lastUpdate } = req.body;
 
+    if (!phase || !lastUpdate) {
+      return res.status(400).json({
+        message: "缺少必要欄位",
+        details: "phase 和 lastUpdate 是必填的",
+      });
+    }
+
     const partner = await Partner.findById(partnerId);
     if (!partner) {
       return res.status(404).json({ message: "找不到此合作夥伴" });
@@ -327,12 +339,13 @@ router.put("/:partnerId/progress", auth, isAdmin, async (req, res) => {
       ...partner.progress,
       phase,
       lastUpdate: new Date(lastUpdate),
+      details: req.body.details || partner.progress.details,
     };
 
     // 新增對應的時間軸事件
     const timelineEvent = {
       event: `階段更新：${phase}`,
-      description: "進度已更新",
+      description: req.body.details || "進度已更新",
       phase,
       date: new Date(lastUpdate),
       createdAt: new Date(),
@@ -352,7 +365,7 @@ router.put("/:partnerId/progress", auth, isAdmin, async (req, res) => {
       timeline: updatedPartner.timeline,
     });
   } catch (error) {
-    console.error("Update progress error:", error);
+    console.error("更新進度失敗:", error);
     res.status(500).json({
       message: "更新進度失敗",
       error: error.message,
@@ -360,63 +373,27 @@ router.put("/:partnerId/progress", auth, isAdmin, async (req, res) => {
   }
 });
 
-// 刪除時間軸事件
-router.delete(
-  "/:partnerId/timeline/:eventId",
-  auth,
-  isAdmin,
-  async (req, res) => {
-    try {
-      const { partnerId, eventId } = req.params;
-      const partner = await Partner.findById(partnerId);
-
-      if (!partner) {
-        return res.status(404).json({ message: "找不到此合作夥伴" });
-      }
-
-      if (!partner.timeline || !Array.isArray(partner.timeline)) {
-        return res.status(400).json({ message: "時間軸資料格式錯誤" });
-      }
-
-      const timelineIndex = partner.timeline.findIndex(
-        (event) => event._id.toString() === eventId
-      );
-
-      if (timelineIndex === -1) {
-        return res.status(404).json({ message: "找不到此時間軸事件" });
-      }
-
-      // 刪除時間軸事件
-      partner.timeline.splice(timelineIndex, 1);
-
-      // 更新進度資訊
-      await updateProgressFromTimeline(partner);
-
-      const updatedPartner = await partner.save();
-
-      res.json({
-        message: "時間軸事件已成功刪除",
-        timeline: updatedPartner.timeline,
-        progress: updatedPartner.progress,
-      });
-    } catch (error) {
-      console.error("Delete timeline error:", error);
-      if (error.name === "CastError") {
-        return res.status(400).json({ message: "無效的ID格式" });
-      }
-      res.status(500).json({
-        message: "刪除時間軸事件失敗",
-        error: error.message,
-      });
-    }
-  }
-);
-
 // 新增資源
 router.post("/:partnerId/resources", auth, isAdmin, async (req, res) => {
   try {
     const { partnerId } = req.params;
     const { title, type, content, url } = req.body;
+
+    // 驗證必要欄位
+    if (!title || !type || !content) {
+      return res.status(400).json({
+        message: "缺少必要欄位",
+        details: "title、type 和 content 是必填的",
+      });
+    }
+
+    // 如果 type 是 'link'，則 url 是必填的
+    if (type === "link" && !url) {
+      return res.status(400).json({
+        message: "缺少必要欄位",
+        details: "type 為 'link' 時，url 是必填的",
+      });
+    }
 
     const partner = await Partner.findById(partnerId);
     if (!partner) {
@@ -427,7 +404,7 @@ router.post("/:partnerId/resources", auth, isAdmin, async (req, res) => {
       title,
       type,
       content,
-      url,
+      url: type === "link" ? url : undefined,
       order: partner.resources.length,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -443,7 +420,13 @@ router.post("/:partnerId/resources", auth, isAdmin, async (req, res) => {
       resources: updatedPartner.resources,
     });
   } catch (error) {
-    console.error("Create resource error:", error);
+    console.error("新增資源失敗:", error);
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        message: "資料驗證失敗",
+        details: Object.values(error.errors).map((err) => err.message),
+      });
+    }
     res.status(500).json({
       message: "新增資源失敗",
       error: error.message,
@@ -461,6 +444,22 @@ router.put(
       const { partnerId, resourceId } = req.params;
       const { title, type, content, url } = req.body;
 
+      // 驗證必要欄位
+      if (!title || !type || !content) {
+        return res.status(400).json({
+          message: "缺少必要欄位",
+          details: "title、type 和 content 是必填的",
+        });
+      }
+
+      // 如果 type 是 'link'，則 url 是必填的
+      if (type === "link" && !url) {
+        return res.status(400).json({
+          message: "缺少必要欄位",
+          details: "type 為 'link' 時，url 是必填的",
+        });
+      }
+
       const partner = await Partner.findById(partnerId);
       if (!partner) {
         return res.status(404).json({ message: "找不到此合作夥伴" });
@@ -474,16 +473,14 @@ router.put(
         return res.status(404).json({ message: "找不到此資源" });
       }
 
-      const originalResourceId = partner.resources[resourceIndex]._id;
-      const originalOrder = partner.resources[resourceIndex].order;
+      const originalResource = partner.resources[resourceIndex];
 
       partner.resources[resourceIndex] = {
-        _id: originalResourceId,
+        ...originalResource.toObject(),
         title,
         type,
         content,
-        url,
-        order: originalOrder,
+        url: type === "link" ? url : undefined,
         updatedAt: new Date(),
         updatedBy: req.user.userId,
       };
@@ -495,7 +492,13 @@ router.put(
         resources: updatedPartner.resources,
       });
     } catch (error) {
-      console.error("Update resource error:", error);
+      console.error("更新資源失敗:", error);
+      if (error.name === "ValidationError") {
+        return res.status(400).json({
+          message: "資料驗證失敗",
+          details: Object.values(error.errors).map((err) => err.message),
+        });
+      }
       res.status(500).json({
         message: "更新資源失敗",
         error: error.message,
@@ -530,11 +533,12 @@ router.delete(
         return res.status(404).json({ message: "找不到此資源" });
       }
 
+      // 刪除資源
       partner.resources.splice(resourceIndex, 1);
 
       // 重新排序剩餘資源
       partner.resources = partner.resources.map((resource, index) => ({
-        ...resource,
+        ...resource.toObject(),
         order: index,
       }));
 
@@ -545,7 +549,7 @@ router.delete(
         resources: updatedPartner.resources,
       });
     } catch (error) {
-      console.error("Delete resource error:", error);
+      console.error("刪除資源失敗:", error);
       if (error.name === "CastError") {
         return res.status(400).json({ message: "無效的ID格式" });
       }
@@ -566,6 +570,7 @@ router.get("/:id", async (req, res) => {
     }
     res.json(partner);
   } catch (error) {
+    console.error("獲取合作夥伴資訊失敗:", error);
     if (error.name === "CastError") {
       return res.status(400).json({ message: "無效的合作夥伴ID" });
     }
@@ -584,6 +589,9 @@ router.put("/:id", auth, isAdmin, async (req, res) => {
       return res.status(404).json({ message: "找不到此合作夥伴" });
     }
 
+    console.log("接收到的更新合作夥伴資料:", req.body); // 日誌記錄
+
+    // 處理資源更新時間
     if (req.body.resources) {
       req.body.resources = req.body.resources.map((resource) => ({
         ...resource,
@@ -601,6 +609,7 @@ router.put("/:id", auth, isAdmin, async (req, res) => {
       updatedAt: new Date(),
     };
 
+    // 如果沒有提供 timeline，保留原有的 timeline
     if (!updateData.timeline) {
       updateData.timeline = oldPartner.timeline || [];
     }
@@ -611,6 +620,9 @@ router.put("/:id", auth, isAdmin, async (req, res) => {
         event: `階段更新：${req.body.progress.phase}`,
         description: req.body.progress.details || "",
         type: "update",
+        phase: req.body.progress.phase,
+        createdBy: req.user.userId,
+        updatedBy: req.user.userId,
       };
       updateData.timeline = [...updateData.timeline, timelineEntry];
     }
@@ -623,6 +635,7 @@ router.put("/:id", auth, isAdmin, async (req, res) => {
 
     res.json(updatedPartner);
   } catch (error) {
+    console.error("更新合作夥伴失敗:", error);
     if (error.name === "ValidationError") {
       return res.status(400).json({
         message: "資料驗證失敗",
@@ -645,6 +658,7 @@ router.delete("/:id", auth, isAdmin, async (req, res) => {
     }
     res.json({ message: "合作夥伴已成功刪除" });
   } catch (error) {
+    console.error("刪除合作夥伴失敗:", error);
     if (error.name === "CastError") {
       return res.status(400).json({ message: "無效的合作夥伴ID" });
     }
@@ -660,6 +674,13 @@ router.put("/:partnerId/resources/reorder", auth, isAdmin, async (req, res) => {
   try {
     const { partnerId } = req.params;
     const { resourceIds } = req.body; // 期望收到資源ID的新順序陣列
+
+    if (!Array.isArray(resourceIds)) {
+      return res.status(400).json({
+        message: "提供的資源ID應為陣列",
+        details: "resourceIds 必須是一個包含資源ID的陣列",
+      });
+    }
 
     const partner = await Partner.findById(partnerId);
     if (!partner) {
@@ -693,7 +714,7 @@ router.put("/:partnerId/resources/reorder", auth, isAdmin, async (req, res) => {
       resources: updatedPartner.resources,
     });
   } catch (error) {
-    console.error("Reorder resources error:", error);
+    console.error("重新排序資源失敗:", error);
     res.status(500).json({
       message: "重新排序資源失敗",
       error: error.message,
@@ -705,7 +726,24 @@ router.put("/:partnerId/resources/reorder", auth, isAdmin, async (req, res) => {
 router.post("/:partnerId/contacts", auth, isAdmin, async (req, res) => {
   try {
     const { partnerId } = req.params;
-    const contactData = req.body;
+    const { name, title, email, phone } = req.body;
+
+    // 驗證必要欄位
+    if (!name || !title || !email) {
+      return res.status(400).json({
+        message: "缺少必要欄位",
+        details: "name、title 和 email 是必填的",
+      });
+    }
+
+    // 驗證 email 格式
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({
+        message: "Email 格式不正確",
+        details: "請提供有效的電子郵件地址",
+      });
+    }
 
     const partner = await Partner.findById(partnerId);
     if (!partner) {
@@ -713,7 +751,10 @@ router.post("/:partnerId/contacts", auth, isAdmin, async (req, res) => {
     }
 
     const newContact = {
-      ...contactData,
+      name,
+      title,
+      email,
+      phone,
       createdAt: new Date(),
       updatedAt: new Date(),
       createdBy: req.user.userId,
@@ -728,7 +769,13 @@ router.post("/:partnerId/contacts", auth, isAdmin, async (req, res) => {
       contacts: updatedPartner.contacts,
     });
   } catch (error) {
-    console.error("Create contact error:", error);
+    console.error("新增聯絡人失敗:", error);
+    if (error.name === "ValidationError") {
+      return res.status(400).json({
+        message: "資料驗證失敗",
+        details: Object.values(error.errors).map((err) => err.message),
+      });
+    }
     res.status(500).json({
       message: "新增聯絡人失敗",
       error: error.message,
@@ -744,7 +791,24 @@ router.put(
   async (req, res) => {
     try {
       const { partnerId, contactId } = req.params;
-      const contactData = req.body;
+      const { name, title, email, phone } = req.body;
+
+      // 驗證必要欄位
+      if (!name || !title || !email) {
+        return res.status(400).json({
+          message: "缺少必要欄位",
+          details: "name、title 和 email 是必填的",
+        });
+      }
+
+      // 驗證 email 格式
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({
+          message: "Email 格式不正確",
+          details: "請提供有效的電子郵件地址",
+        });
+      }
 
       const partner = await Partner.findById(partnerId);
       if (!partner) {
@@ -762,10 +826,11 @@ router.put(
       // 保留原有ID和創建資訊
       const originalContact = partner.contacts[contactIndex];
       partner.contacts[contactIndex] = {
-        ...contactData,
-        _id: originalContact._id,
-        createdAt: originalContact.createdAt,
-        createdBy: originalContact.createdBy,
+        ...originalContact.toObject(),
+        name,
+        title,
+        email,
+        phone,
         updatedAt: new Date(),
         updatedBy: req.user.userId,
       };
@@ -777,7 +842,13 @@ router.put(
         contacts: updatedPartner.contacts,
       });
     } catch (error) {
-      console.error("Update contact error:", error);
+      console.error("更新聯絡人失敗:", error);
+      if (error.name === "ValidationError") {
+        return res.status(400).json({
+          message: "資料驗證失敗",
+          details: Object.values(error.errors).map((err) => err.message),
+        });
+      }
       res.status(500).json({
         message: "更新聯絡人失敗",
         error: error.message,
@@ -808,6 +879,7 @@ router.delete(
         return res.status(404).json({ message: "找不到此聯絡人" });
       }
 
+      // 刪除聯絡人
       partner.contacts.splice(contactIndex, 1);
       const updatedPartner = await partner.save();
 
@@ -816,7 +888,10 @@ router.delete(
         contacts: updatedPartner.contacts,
       });
     } catch (error) {
-      console.error("Delete contact error:", error);
+      console.error("刪除聯絡人失敗:", error);
+      if (error.name === "CastError") {
+        return res.status(400).json({ message: "無效的ID格式" });
+      }
       res.status(500).json({
         message: "刪除聯絡人失敗",
         error: error.message,

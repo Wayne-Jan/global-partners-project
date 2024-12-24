@@ -214,15 +214,29 @@
                 <option value="子計畫九">子計畫九</option>
               </select>
             </div>
+
+            <div>
+              <label class="block text-sm font-medium text-gray-700"
+                >合作項目</label
+              >
+              <input
+                type="text"
+                name="project.name"
+                required
+                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                placeholder="請輸入合作項目名稱"
+              />
+            </div>
             <div class="col-span-2">
-              <!-- 使用 col-span-2 讓這個欄位佔據兩列的寬度 -->
               <label class="block text-sm font-medium text-gray-700"
                 >合作項目內容</label
               >
               <textarea
-                name="projectContent"
+                name="project.content"
+                id="projectContent"
                 rows="4"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                placeholder="請輸入合作項目內容描述"
               ></textarea>
             </div>
           </div>
@@ -535,8 +549,9 @@
             department: formData.get("department"),
           },
           project: {
-            name: formData.get("projectName"),
-            content: formData.get("projectContent"),
+            subProject: formData.get("projectName"), // 映射到 subProject
+            name: formData.get("project.name"), // 自訂合作項目名稱
+            content: formData.get("project.content"),
           },
           progress: {
             phase: formData.get("phase"),
@@ -559,8 +574,15 @@
           return;
         }
 
+        if (!data.project.subProject) {
+          // 檢查 subProject
+          alert("請選擇主責子計畫");
+          return;
+        }
+
         if (!data.project.name) {
-          alert("請輸入計畫名稱");
+          // 檢查自訂合作項目名稱
+          alert("請輸入合作項目名稱");
           return;
         }
 
@@ -688,66 +710,114 @@
       }
 
       function populateForm(data) {
+        // 清空現有的資源和聯絡人容器
         document.getElementById("resourcesContainer").innerHTML = "";
         document.getElementById("contactsContainer").innerHTML = "";
 
         resourceCount = 0;
         contactCount = 0;
 
-        document.querySelector('[name="country"]').value = data.country.code;
-        document.querySelector('[name="institution"]').value =
-          data.institution.name;
-        document.querySelector('[name="department"]').value =
-          data.institution.department || "";
-        document.querySelector('[name="projectName"]').value =
-          data.project.name;
-        document.querySelector('[name="projectContent"]').value =
-          data.project.content || "";
-        document.querySelector('[name="phase"]').value = data.progress.phase;
-        document.querySelector('[name="progressDetails"]').value =
-          data.progress.details || "";
+        // 基本資訊填充
+        const countrySelect = document.querySelector('[name="country"]');
+        if (countrySelect) {
+          countrySelect.value = data.country.code;
+        }
 
+        const institutionInput = document.querySelector('[name="institution"]');
+        if (institutionInput) {
+          institutionInput.value = data.institution.name;
+        }
+
+        const departmentInput = document.querySelector('[name="department"]');
+        if (departmentInput) {
+          departmentInput.value = data.institution.department || "";
+        }
+
+        const projectNameInput = document.querySelector(
+          '[name="project.name"]'
+        );
+        if (projectNameInput) {
+          projectNameInput.value = data.project.name || "";
+        }
+
+        const projectContentInput = document.querySelector(
+          '[name="project.content"]'
+        );
+        if (projectContentInput) {
+          projectContentInput.value = data.project.content || "";
+        }
+
+        const phaseSelect = document.querySelector('[name="phase"]');
+        if (phaseSelect) {
+          phaseSelect.value = data.progress.phase;
+        }
+
+        const progressDetailsInput = document.querySelector(
+          '[name="progressDetails"]'
+        );
+        if (progressDetailsInput) {
+          progressDetailsInput.value = data.progress.details || "";
+        }
+
+        // 資源資料填充
         if (data.resources && data.resources.length > 0) {
           data.resources.forEach((resource) => {
             addResource();
             const lastIndex = resourceCount - 1;
-            document.querySelector(
+
+            const titleInput = document.querySelector(
               `[name="resources[${lastIndex}][title]"]`
-            ).value = resource.title;
-            document.querySelector(
-              `[name="resources[${lastIndex}][type]"]`
-            ).value = resource.type;
-            document.querySelector(
-              `[name="resources[${lastIndex}][content]"]`
-            ).value = resource.content;
-            if (resource.url) {
-              document.querySelector(
-                `[name="resources[${lastIndex}][url]"]`
-              ).value = resource.url;
-            }
-            // 觸發類型變更處理
-            handleTypeChange(
-              document.querySelector(`[name="resources[${lastIndex}][type]"]`)
             );
+            const typeSelect = document.querySelector(
+              `[name="resources[${lastIndex}][type]"]`
+            );
+            const contentInput = document.querySelector(
+              `[name="resources[${lastIndex}][content]"]`
+            );
+            const urlInput = document.querySelector(
+              `[name="resources[${lastIndex}][url]"]`
+            );
+
+            if (titleInput) titleInput.value = resource.title;
+            if (typeSelect) typeSelect.value = resource.type;
+            if (contentInput) contentInput.value = resource.content;
+            if (urlInput && resource.url) urlInput.value = resource.url;
+
+            // 觸發類型變更處理
+            const typeElement = document.querySelector(
+              `[name="resources[${lastIndex}][type]"]`
+            );
+            if (typeElement) {
+              handleTypeChange(typeElement);
+            }
           });
         }
 
-        data.contacts.forEach((contact) => {
-          addContact();
-          const lastIndex = contactCount - 1;
-          document.querySelector(
-            `[name="contacts[${lastIndex}][name]"]`
-          ).value = contact.name;
-          document.querySelector(
-            `[name="contacts[${lastIndex}][title]"]`
-          ).value = contact.title;
-          document.querySelector(
-            `[name="contacts[${lastIndex}][email]"]`
-          ).value = contact.email;
-          document.querySelector(
-            `[name="contacts[${lastIndex}][phone]"]`
-          ).value = contact.phone || "";
-        });
+        // 聯絡人資料填充
+        if (data.contacts && data.contacts.length > 0) {
+          data.contacts.forEach((contact) => {
+            addContact();
+            const lastIndex = contactCount - 1;
+
+            const nameInput = document.querySelector(
+              `[name="contacts[${lastIndex}][name]"]`
+            );
+            const titleInput = document.querySelector(
+              `[name="contacts[${lastIndex}][title]"]`
+            );
+            const emailInput = document.querySelector(
+              `[name="contacts[${lastIndex}][email]"]`
+            );
+            const phoneInput = document.querySelector(
+              `[name="contacts[${lastIndex}][phone]"]`
+            );
+
+            if (nameInput) nameInput.value = contact.name;
+            if (titleInput) titleInput.value = contact.title;
+            if (emailInput) emailInput.value = contact.email;
+            if (phoneInput) phoneInput.value = contact.phone || "";
+          });
+        }
       }
 
       async function checkPermissions() {

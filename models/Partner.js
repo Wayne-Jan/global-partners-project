@@ -1,18 +1,11 @@
 // models/Partner.js
 const mongoose = require("mongoose");
 
+// 定義時間軸 Schema
 const timelineSchema = new mongoose.Schema({
-  date: {
-    type: Date,
-    required: true,
-  },
-  event: {
-    type: String,
-    required: true,
-  },
-  description: {
-    type: String,
-  },
+  date: { type: Date, required: true },
+  event: { type: String, required: true },
+  description: { type: String },
   phase: {
     type: String,
     required: true,
@@ -31,29 +24,64 @@ const timelineSchema = new mongoose.Schema({
     enum: ["create", "update", "delete"],
     default: "create",
   },
-  createdBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-  },
-  updatedBy: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
-  },
+  createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
 });
 
+// 定義資源 Schema
+const resourceSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  content: { type: String, required: true },
+  url: {
+    type: String,
+    required: function () {
+      return this.type === "link";
+    },
+    validate: {
+      validator: function (v) {
+        if (this.type === "link") {
+          return /^https?:\/\/.+\..+/.test(v);
+        }
+        return true;
+      },
+      message: (props) => `${props.value} 不是一個有效的 URL！`,
+    },
+  },
+  type: {
+    type: String,
+    enum: ["text", "link", "note"],
+    default: "text",
+  },
+  order: { type: Number, default: 0 },
+  createdAt: { type: Date, default: Date.now },
+});
+
+// 定義聯絡人 Schema
+const contactSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  title: { type: String, required: true },
+  email: {
+    type: String,
+    required: true,
+    match: [/^[^\s@]+@[^\s@]+\.[^\s@]+$/, "請提供一個有效的電子郵件地址"],
+  },
+  phone: { type: String },
+});
+
+// 定義主要的 Partner Schema
 const partnerSchema = new mongoose.Schema(
   {
     country: {
-      code: { type: String, required: true }, // 國家代碼，如 TW, US
-      name: { type: String, required: true }, // 國家名稱
-      flag: { type: String, required: true }, // 國旗 emoji
+      code: { type: String, required: true },
+      name: { type: String, required: true },
+      flag: { type: String, required: true },
     },
     institution: {
-      name: { type: String, required: true }, // 機構名稱
-      department: String, // 部門（選填）
+      name: { type: String, required: true },
+      department: { type: String },
     },
     project: {
-      name: {
+      subProject: {
         type: String,
         required: true,
         enum: [
@@ -66,10 +94,8 @@ const partnerSchema = new mongoose.Schema(
           "子計畫九",
         ],
       },
-      content: {
-        type: String,
-        required: false, // 設為非必填
-      },
+      name: { type: String, required: true }, // 自訂合作項目名稱
+      content: { type: String },
     },
     progress: {
       phase: {
@@ -85,58 +111,20 @@ const partnerSchema = new mongoose.Schema(
           "完成階段",
         ],
       },
-      details: String, // 進度詳細說明
-      lastUpdate: {
-        // 最後更新時間
-        type: Date,
-        default: Date.now,
-      },
+      details: { type: String },
+      lastUpdate: { type: Date, default: Date.now },
     },
-    resources: [
-      {
-        title: String,
-        content: String,
-        url: String,
-        type: {
-          type: String,
-          enum: ["text", "link", "note"],
-          default: "text",
-        },
-        order: {
-          type: Number,
-          default: 0,
-        },
-        createdAt: {
-          type: Date,
-          default: Date.now,
-        },
-      },
-    ],
-    contacts: [
-      {
-        // 聯絡人（可多個）
-        name: String, // 姓名
-        title: String, // 職稱
-        email: String, // Email
-        phone: String, // 電話（選填）
-      },
-    ],
-    timeline: [timelineSchema], // 新增的時間軸屬性
+    resources: [resourceSchema],
+    contacts: [contactSchema],
+    timeline: [timelineSchema],
     createdBy: {
-      // 建立者
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
-    updatedBy: {
-      // 最後更新者
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-    },
+    updatedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   },
-  {
-    timestamps: true, // 自動管理 createdAt 和 updatedAt
-  }
+  { timestamps: true }
 );
 
 module.exports = mongoose.model("Partner", partnerSchema);

@@ -98,6 +98,8 @@
         display: flex;
         flex-direction: column;
         justify-content: space-between;
+        position: relative;
+        overflow: hidden;
       }
 
       .partner-card:hover {
@@ -105,35 +107,7 @@
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
       }
 
-      /* 合作夥伴卡片頭部 */
-      .partner-header {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 16px;
-      }
-
-      .flag {
-        font-size: 24px;
-      }
-
-      .country-name {
-        font-size: 20px;
-        font-weight: bold;
-      }
-
-      .institution {
-        color: #2563eb;
-        font-weight: 600;
-        margin-bottom: 8px;
-      }
-
-      .details {
-        color: #666;
-        margin-bottom: 16px;
-      }
-
-      /* 標籤樣式 */
+      /* 標籤列 */
       .tags {
         display: flex;
         flex-wrap: wrap;
@@ -148,6 +122,12 @@
         border-radius: 9999px;
         font-size: 12px;
         font-weight: 500;
+      }
+
+      .tag-project {
+        background-color: #e0f2fe;
+        color: #1e40af;
+        font-weight: 600;
       }
 
       /* 階段標籤顏色 */
@@ -186,6 +166,49 @@
         color: #4b5563;
       }
 
+      /* 合作夥伴資訊 */
+      .partner-info {
+        margin-top: 16px;
+      }
+
+      .partner-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 8px;
+      }
+
+      .flag {
+        font-size: 24px;
+      }
+
+      .country-name {
+        font-size: 20px;
+        font-weight: bold;
+      }
+
+      .details {
+        color: #666;
+        margin-bottom: 8px;
+      }
+
+      .institution {
+        color: #2563eb;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      /* Project Name 摘要 */
+      .project-name {
+        background-color: #f9fafb;
+        padding: 8px;
+        border-radius: 0.375rem;
+        font-size: 14px;
+        color: #374151;
+        margin-bottom: 16px;
+        text-align: left; /* 文字靠左 */
+      }
+
       /* 無合作夥伴與錯誤訊息 */
       .no-partners,
       .error-message {
@@ -208,6 +231,48 @@
         .partner-card {
           padding: 1rem;
         }
+      }
+
+      /* 統一合作項目背景和文字對齊 */
+      .project-container {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 12px 16px;
+        background-color: #f9fafb; /* 統一背景色 */
+        border-radius: 0 0 8px 8px;
+      }
+
+      .project-content {
+        flex-grow: 1;
+        min-width: 0; /* 確保文字會正確換行 */
+        text-align: left; /* 文字靠左 */
+      }
+
+      .project-name {
+        margin: 0;
+        font-size: 14px;
+        font-weight: 500;
+        color: #2c3e50;
+        line-height: 1.4;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: -webkit-box;
+
+        -webkit-box-orient: vertical;
+        text-align: left; /* 文字靠左 */
+      }
+
+      /* 分隔線 */
+      .divider {
+        height: 1px;
+        margin: 12px 0;
+        background: linear-gradient(
+          to right,
+          rgba(0, 0, 0, 0.02) 0%,
+          rgba(0, 0, 0, 0.1) 50%,
+          rgba(0, 0, 0, 0.02) 100%
+        );
       }
     </style>
   </head>
@@ -277,7 +342,6 @@
         }
       }
 
-      // 顯示合作夥伴卡片
       function displayPartners(partners) {
         if (!Array.isArray(partners)) {
           console.error("partners 不是陣列:", partners);
@@ -287,12 +351,12 @@
         const grid = document.getElementById("partnersGrid");
         grid.innerHTML = partners
           .map((partner) => {
-            // 添加資料驗證
             if (
               !partner ||
               !partner.country ||
               !partner.institution ||
-              !partner.progress
+              !partner.progress ||
+              !partner.project
             ) {
               console.error("合作夥伴資料格式不正確:", partner);
               return "";
@@ -304,10 +368,10 @@
               }'">
                 <!-- 標籤列 -->
                 <div class="tags">
-                  <span class="tag">${
-                    partner.project && partner.project.name
-                      ? partner.project.name
-                      : "未設定"
+                  <span class="tag tag-project">${
+                    partner.project && partner.project.subProject
+                      ? partner.project.subProject
+                      : "未設定項目"
                   }</span>
                   ${
                     partner.progress.phase
@@ -319,28 +383,55 @@
                       : ""
                   }
                 </div>
-
+                
                 <!-- 國家與機構資訊 -->
                 <div class="partner-info">
                   <div class="partner-header">
                     <span class="flag">${partner.country.flag || "🏳️"}</span>
                     <div>
                       <h2 class="country-name">${
-                        partner.country.name || "未知國家"
+                        escapeHtml(partner.country.name) || "未知國家"
                       }</h2>
-                      <p class="details">${partner.country.code || ""}</p>
+                      <p class="details">${
+                        escapeHtml(partner.country.code) || ""
+                      }</p>
                     </div>
                   </div>
-
                   <div class="institution">
-                    ${partner.institution.name || "未知機構"}
+                    ${escapeHtml(partner.institution.name) || "未知機構"}
                   </div>
                   ${
                     partner.institution.department
-                      ? `<div class="details">${partner.institution.department}</div>`
+                      ? `<div class="details">${escapeHtml(
+                          partner.institution.department
+                        )}</div>`
                       : ""
                   }
                 </div>
+      
+                <!-- 分隔線 -->
+                <div class="divider"></div>
+                
+                <!-- 主要合作計畫名稱 -->
+                ${
+                  partner.project.name
+                    ? `<div class="project-container">
+                        <div class="project-icon">
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M21 9V6C21 4.89543 20.1046 4 19 4H5C3.89543 4 3 4.89543 3 6V9M21 9V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V9M21 9H3M12 12H16M12 16H16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                          </svg>
+                        </div>
+                        <div class="project-content">
+                          <span class="project-label">合作項目</span>
+                          <h3 class="project-name" title="${escapeHtml(
+                            partner.project.name
+                          )}">
+                            ${escapeHtml(partner.project.name)}
+                          </h3>
+                        </div>
+                      </div>`
+                    : ""
+                }
               </div>
             `;
           })
@@ -360,6 +451,19 @@
         };
 
         return phases[phase] || "phase-completion";
+      }
+
+      // 安全顯示文字，防止 XSS 攻擊
+      function escapeHtml(text) {
+        if (typeof text !== "string") {
+          return text;
+        }
+        return text
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#039;");
       }
 
       // 檢查登入狀態

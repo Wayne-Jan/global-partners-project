@@ -927,68 +927,80 @@
 
         // 更新基本資訊
         document.getElementById("basicInfo").innerHTML = `
-<div class="relative bg-white rounded-lg p-6">
-  <!-- 頂部資訊列 -->
-  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0 sm:space-x-6">
-    <div class="flex items-center space-x-3">
-      <span class="inline-block bg-blue-100 text-blue-800 px-4 py-1 rounded-full text-sm font-medium border border-blue-200">
-        ${data.project.name}
-      </span>
-      <div class="flex items-center">
-        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getPhaseColor(
-          data.progress.phase
-        )}">
-          ${data.progress.phase}
-        </span>
-      </div>
-    </div>
-    <div class="flex items-center text-gray-500 text-sm">
-      <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-      ${formatDisplayDate(data.updatedAt || data.createdAt)}
-    </div>
-  </div>
-
-  <!-- 主要內容 -->
-  <div class="space-y-6">
-    <!-- 國家資訊 -->
-    <div class="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-4">
-      <span class="text-4xl">${data.country.flag}</span>
-      <div>
-        <h1 class="text-2xl font-bold text-gray-900">${data.country.name}</h1>
-        <p class="text-gray-500 text-sm">${data.country.code}</p>
-      </div>
-    </div>
-
-    <!-- 機構資訊 -->
-    <div class="border-l-4 border-blue-500 pl-4">
-      <h2 class="text-xl text-blue-600 font-semibold">
-        ${data.institution.name}
-      </h2>
-      ${
-        data.institution.department
-          ? `<p class="text-gray-600 mt-1">${data.institution.department}</p>`
-          : ""
-      }
-    </div>
-
-    <!-- 合作項目內容 -->
-    ${
-      data.project.content
-        ? `
-      <div class="bg-gray-50 rounded-lg p-4">
-        <h3 class="text-sm font-medium text-gray-700 uppercase tracking-wider mb-2">合作項目內容</h3>
-        <div class="prose max-w-none">
-          <p class="text-gray-600 text-sm leading-relaxed whitespace-pre-line">${data.project.content}</p>
-        </div>
-      </div>
-      `
-        : ""
-    }
-  </div>
-</div>
-`;
+          <div class="relative bg-white rounded-lg p-6">
+            <!-- 頂部資訊列 -->
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0 sm:space-x-6">
+              <div class="flex items-center space-x-3">
+                <span class="inline-block bg-blue-100 text-blue-800 px-4 py-1 rounded-full text-sm font-medium border border-blue-200">
+                  ${data.project.subProject}
+                </span>
+                <div class="flex items-center">
+                  <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${getPhaseColor(
+                    data.progress.phase
+                  )}">
+                    ${data.progress.phase}
+                  </span>
+                </div>
+              </div>
+              <div class="flex items-center text-gray-500 text-sm">
+                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                ${formatDisplayDate(data.updatedAt || data.createdAt)}
+              </div>
+            </div>
+      
+            <!-- 主要內容 -->
+            <div class="space-y-6">
+              <!-- 國家資訊 -->
+              <div class="flex flex-col sm:flex-row items-center sm:items-start space-y-4 sm:space-y-0 sm:space-x-4">
+                <span class="text-4xl">${data.country.flag}</span>
+                <div>
+                  <h1 class="text-2xl font-bold text-gray-900">${
+                    data.country.name
+                  }</h1>
+                  <p class="text-gray-500 text-sm">${data.country.code}</p>
+                </div>
+              </div>
+      
+              <!-- 機構資訊 -->
+              <div class="border-l-4 border-blue-500 pl-4">
+                <h2 class="text-xl text-blue-600 font-semibold">
+                  ${data.institution.name}
+                </h2>
+                ${
+                  data.institution.department
+                    ? `<p class="text-gray-600 mt-1">${data.institution.department}</p>`
+                    : ""
+                }
+              </div>
+      
+              <!-- 合作項目資訊 -->
+              <div class="space-y-6">
+                <!-- 合作項目 -->
+                <div class="bg-gray-50 rounded-lg p-4">
+                  <h3 class="text-sm font-medium text-gray-700 uppercase tracking-wider mb-2">合作項目</h3>
+                  <p class="text-gray-600 text-sm">${
+                    data.project.name || "尚未設定"
+                  }</p>
+                </div>
+                <!-- 合作項目內容 -->
+                ${
+                  data.project.content
+                    ? `
+                  <div class="bg-gray-50 rounded-lg p-4">
+                    <h3 class="text-sm font-medium text-gray-700 uppercase tracking-wider mb-2">合作項目內容</h3>
+                    <div class="prose max-w-none">
+                      <p class="text-gray-600 text-sm leading-relaxed whitespace-pre-line">${data.project.content}</p>
+                    </div>
+                  </div>
+                  `
+                    : ""
+                }
+              </div>
+            </div>
+          </div>
+        `;
 
         const hasPermission = checkUserPermission();
 

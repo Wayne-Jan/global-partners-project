@@ -1275,15 +1275,11 @@
           return;
         }
 
-        // 將輸入的台灣時間轉換為 UTC ISO 字符串
-        const date = new Date(dateValue + ":00"); // 加上秒數
+        // 將使用者輸入的日期時間（假設為台北時間）轉換為 UTC ISO 字符串
+        const date = new Date(`${dateValue}:00+08:00`);
+        const utcDate = date.toISOString();
 
-        // 將台灣時間轉換為 UTC
-        const utcDate = new Date(
-          date.toLocaleString("en-US", { timeZone: "UTC" })
-        );
-
-        if (isNaN(utcDate.getTime())) {
+        if (isNaN(date.getTime())) {
           alert("請輸入有效的日期時間。");
           return;
         }
@@ -1305,7 +1301,7 @@
           event: `階段更新：${phase}`,
           description: description,
           phase: phase,
-          date: utcDate.toISOString(),
+          date: utcDate, // 使用 UTC ISO 字符串
           type: type, // 明確設置 type
         };
 

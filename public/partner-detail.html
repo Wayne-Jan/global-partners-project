@@ -834,44 +834,23 @@
           ...data.progress,
           phase: latestPhase.phase,
           lastUpdate: latestPhase.date,
+          details: latestPhase.description,
         };
-
-        // 更新基本資訊
-        document.getElementById("basicInfo").innerHTML = `
-            <div class="relative">
-              <div class="absolute top-0 left-0 bg-blue-100 text-blue-800 px-3 py-1 rounded-bl-lg rounded-tr-lg text-sm font-medium">
-                ${data.project.name}
-              </div>
-              <div class="flex items-center space-x-4 pt-8">
-                <span class="text-4xl">${data.country.flag}</span>
-                <h1 class="text-2xl font-bold">${data.country.name}</h1>
-              </div>
-              <div class="mt-4">
-                <h2 class="text-xl text-blue-600 font-semibold">
-                  ${data.institution.name}
-                </h2>
-                ${
-                  data.institution.department
-                    ? `<p class="text-gray-600 mt-1">${data.institution.department}</p>`
-                    : ""
-                }
-              </div>
-            </div>
-          `;
 
         // 更新進度資訊
         document.getElementById("progressInfo").innerHTML = `
-            <div>
-              <h3 class="font-medium text-gray-700">當前階段</h3>
-              <p class="mt-1 text-lg">${data.progress.phase}</p>
-            </div>
-            <div>
-              <h3 class="font-medium text-gray-700">最後更新</h3>
-              <p class="mt-1">${new Date(
-                data.progress.lastUpdate
-              ).toLocaleDateString()}</p>
-            </div>
-          `;
+    <div>
+      <h3 class="font-medium text-gray-700">當前階段</h3>
+      <p class="mt-1 text-lg">${data.progress.phase}</p>
+      <p class="text-sm text-gray-500 mt-1">${data.progress.details || ""}</p>
+    </div>
+    <div>
+      <h3 class="font-medium text-gray-700">最後更新</h3>
+      <p class="mt-1">${new Date(data.progress.lastUpdate).toLocaleString(
+        "zh-TW"
+      )}</p>
+    </div>
+  `;
 
         const hasPermission = checkUserPermission();
 
@@ -885,67 +864,56 @@
         const timelineHTML = sortedTimeline
           .map(
             (item) => `
-                <div class="timeline-item ${
-                  item.type || "update"
-                } flex relative" onclick="showDetail('${item._id}')">
-                  <div class="flex flex-col items-center">
-                    <div class="timeline-dot ${item.type || "update"}"></div>
-                  </div>
-                  <div class="timeline-content ml-6 p-4 bg-gray-100 rounded-lg w-full">
-                    <div class="flex justify-between items-center">
-                      <span class="font-medium ${
-                        item.isMain
-                          ? "font-bold text-blue-600"
-                          : "italic text-gray-700"
-                      }">${item.phase}</span>
-                      <div class="flex items-center space-x-2">
-                        <span class="timeline-badge badge-${
-                          item.type || "update"
-                        }">${getTimelineBadgeText(item.type)}</span>
-                        ${
-                          hasPermission
-                            ? `
-                              <button
-                                onclick="editTimelineEvent(event, '${
-                                  item._id
-                                }', ${JSON.stringify(item).replace(
-                                /"/g,
-                                "&quot;"
-                              )})"
-                                class="text-blue-600 hover:text-blue-800 text-sm"
-                                title="編輯"
-                              >
-                                <!-- 編輯圖示 -->
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                                </svg>
-                              </button>
-                              <button
-                                onclick="deleteTimelineEvent(event, '${
-                                  item._id
-                                }')"
-                                class="text-red-600 hover:text-red-800 text-sm"
-                                title="刪除"
-                              >
-                                <!-- 刪除圖示 -->
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                              </button>
-                            `
-                            : ""
-                        }
-                      </div>
-                    </div>
-                    <div class="text-gray-500 text-sm mt-1">
-                      ${new Date(item.date).toLocaleString("zh-TW")}
-                    </div>
-                    <div class="mt-2">
-                      ${item.description}
-                    </div>
-                  </div>
-                </div>
-              `
+      <div class="timeline-item ${
+        item.type || "update"
+      } flex relative" onclick="showDetail('${item._id}')">
+        <div class="flex flex-col items-center">
+          <div class="timeline-dot ${item.type || "update"}"></div>
+        </div>
+        <div class="timeline-content ml-6 p-4 bg-gray-100 rounded-lg w-full">
+          <div class="flex justify-between items-center">
+            <span class="font-medium">${item.phase}</span>
+            <div class="flex items-center space-x-2">
+              <span class="timeline-badge badge-${
+                item.type || "update"
+              }">${getTimelineBadgeText(item.type)}</span>
+              ${
+                hasPermission
+                  ? `
+                    <button
+                      onclick="editTimelineEvent(event, '${
+                        item._id
+                      }', ${JSON.stringify(item).replace(/"/g, "&quot;")})"
+                      class="text-blue-600 hover:text-blue-800 text-sm"
+                      title="編輯"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                      </svg>
+                    </button>
+                    <button
+                      onclick="deleteTimelineEvent(event, '${item._id}')"
+                      class="text-red-600 hover:text-red-800 text-sm"
+                      title="刪除"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  `
+                  : ""
+              }
+            </div>
+          </div>
+          <div class="text-gray-500 text-sm mt-1">
+            ${new Date(item.date).toLocaleString("zh-TW")}
+          </div>
+          <div class="mt-2 text-gray-700">
+            ${item.description}
+          </div>
+        </div>
+      </div>
+    `
           )
           .join("");
 
@@ -1129,10 +1097,11 @@
           return new Date(b.date) - new Date(a.date);
         });
 
-        // 返回最新的事件階段
+        // 返回最新的事件階段和描述
         return {
           phase: sortedTimeline[0].phase,
           date: sortedTimeline[0].date,
+          description: sortedTimeline[0].description,
         };
       }
 
@@ -1224,18 +1193,34 @@
         const description = document.getElementById("description").value.trim();
         const dateValue = document.getElementById("date").value;
         const date = new Date(dateValue);
+
         if (isNaN(date.getTime())) {
           alert("請輸入有效的日期時間。");
           return;
         }
 
+        // 檢查該階段是否已經存在於 timeline 中
+        let type = "create";
+        const existingEvents = window.partnerData.timeline || [];
+        const phaseExists = existingEvents.some(
+          (event) =>
+            event.phase === phase && (!eventId || event._id !== eventId) // 排除正在編輯的事件
+        );
+
+        if (phaseExists) {
+          type = "update";
+        }
+
         // 準備資料
         const updatedData = {
-          event: `階段更新：${phase}`, // 直接根據 phase 生成事件名稱
+          event: `階段更新：${phase}`,
           description: description,
           phase: phase,
           date: date.toISOString(),
+          type: type, // 明確設置 type
         };
+
+        console.log("Sending data with type:", type); // 添加日誌以確認 type 值
 
         try {
           const response = await fetch(

@@ -134,6 +134,11 @@ router.post("/:partnerId/timeline", auth, isAdmin, async (req, res) => {
       return res.status(404).json({ message: "找不到此合作夥伴" });
     }
 
+    // 檢查是否已存在相同階段的事件
+    const existingPhaseEvent = partner.timeline.find(
+      (event) => event.phase === phase
+    );
+
     // 確保 partner.progress 物件存在
     if (!partner.progress) {
       partner.progress = {
@@ -142,6 +147,9 @@ router.post("/:partnerId/timeline", auth, isAdmin, async (req, res) => {
         details: description,
       };
     }
+
+    // 判斷 type：如果已存在同階段事件則為 update，否則為 create
+    const eventType = existingPhaseEvent ? "update" : "create";
 
     const newTimelineEvent = {
       event,
@@ -152,7 +160,7 @@ router.post("/:partnerId/timeline", auth, isAdmin, async (req, res) => {
       updatedAt: new Date(),
       createdBy: req.user.userId,
       updatedBy: req.user.userId,
-      type: "create",
+      type: eventType,
     };
 
     partner.timeline.push(newTimelineEvent);
@@ -202,6 +210,22 @@ router.put("/:partnerId/timeline/:eventId", auth, isAdmin, async (req, res) => {
     }
 
     const originalEventId = partner.timeline[timelineIndex]._id;
+    const currentType = partner.timeline[timelineIndex].type;
+    const originalPhase = partner.timeline[timelineIndex].phase;
+
+    // 檢查是否已存在其他相同階段的事件（除了當前事件）
+    const existingPhaseEvent = partner.timeline.find(
+      (event) => event.phase === phase && event._id.toString() !== eventId
+    );
+
+    // 判斷 type：
+    // 1. 如果是更改階段，且新階段已存在其他事件，則為 update
+    // 2. 如果是更改階段，且新階段不存在其他事件，則為 create
+    // 3. 如果沒有更改階段，保持原有的 type
+    let newType = currentType;
+    if (phase !== originalPhase) {
+      newType = existingPhaseEvent ? "update" : "create";
+    }
 
     partner.timeline[timelineIndex] = {
       _id: originalEventId,
@@ -211,7 +235,9 @@ router.put("/:partnerId/timeline/:eventId", auth, isAdmin, async (req, res) => {
       date: new Date(date),
       updatedAt: new Date(),
       updatedBy: req.user.userId,
-      type: partner.timeline[timelineIndex].type,
+      type: newType,
+      createdAt: partner.timeline[timelineIndex].createdAt,
+      createdBy: partner.timeline[timelineIndex].createdBy,
     };
 
     // 更新進度資訊
